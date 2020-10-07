@@ -1,3 +1,5 @@
+// Test GIT
+
 // Arduino framework includes
 #include <Arduino.h>
 #include <Wire.h>
@@ -13,7 +15,6 @@
 #include "ADC.h"
 #include "FT8XX.h"
 #include "image_file.h"
-
 
 #include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
