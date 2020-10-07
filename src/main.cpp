@@ -1,4 +1,5 @@
 // Test GIT
+// Test #2
 
 // Arduino framework includes
 #include <Arduino.h>
