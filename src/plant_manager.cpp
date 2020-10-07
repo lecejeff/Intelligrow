@@ -6,8 +6,8 @@ extern RTC_class rtc;
 void PLANT_MANAGER::init (unsigned char plant)
 {
     GARDEN_struct.pump_on_time = 2;                                         // Number of seconds the pump are activated
-    GARDEN_struct.water_max_level = 7;                                      // Water tank max level
-    GARDEN_struct.water_min_level = 23;                                     // Water tank min level
+    GARDEN_struct.water_full_level = 7;                                      // Water tank max level
+    GARDEN_struct.water_empty_level = 23;                                     // Water tank min level
 
     GARDEN_struct.water_time_h = 8;                                         // Time at which we should water the plants, for the pump_on_time amount of time
     GARDEN_struct.water_time_m = 0;

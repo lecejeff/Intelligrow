@@ -36,8 +36,8 @@ typedef struct
     unsigned char water_time_m;
     unsigned char sun_light_time_h;
     unsigned char sun_light_time_m;       
-    unsigned int water_max_level;
-    unsigned int water_min_level;
+    unsigned int water_empty_level;
+    unsigned int water_full_level;
     unsigned char plant_select;
     unsigned int pump_on_time;
     unsigned int dark_threshold;

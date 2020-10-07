@@ -42,10 +42,10 @@ I2C_ADC ADC_i2c;
 //****************************************************************************//
 void I2C_ADC::init (void)
 {             
-    ADC_struct.adc_lsb_weight = 0.002;                                          // Based on FSR of ADS1015
-    ADC_struct.adc_max_value = (unsigned int)(3.3 / ADC_struct.adc_lsb_weight); // Max digital value that can be read by the ADC with signals referenced to 3V3 
-    ADC_struct.temp_coeff = 0.01;                                               // Volts / degreeC
-    ADC_struct.temp_offset = 0.5;                                               // Vout at Ta = 0 degreeC
+    ADC_struct.adc_lsb_weight = 0.002;                                              // Based on FSR of ADS1015
+    ADC_struct.adc_max_value = (unsigned int)((3.3 / ADC_struct.adc_lsb_weight)+1); // Max digital value that can be read by the ADC with signals referenced to 3V3 
+    ADC_struct.temp_coeff = 0.01;                                                   // Volts / degreeC
+    ADC_struct.temp_offset = 0.5;                                                   // Vout at Ta = 0 degreeC
     ADC_struct.res_ratio = 0.1808318;      
 
     ADC_struct.light_input = 0;

@@ -27,8 +27,6 @@ void sensor_refresh_ticker();
 void water_counter_ticker();
 void light_counter_ticker();
 void minute_counter_tick();
-//void HCSR04_interrupt ();
-void qei_interrupt ();
 void clear_inactivity_counter (void);
 
 #define TANK_ECHO_PIN 15
@@ -63,7 +61,8 @@ typedef struct
     unsigned char scan_tag_flag;
     unsigned char water_level_flag;
     unsigned int water_level;
-    unsigned long pulse_in_duration;
+    unsigned long micros_start;
+    unsigned long micros_stop;
     unsigned char menu_screensaver;
     unsigned char plant_watering_flag;
     unsigned char inactivity_display_flag;

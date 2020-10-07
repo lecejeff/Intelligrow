@@ -182,25 +182,24 @@ void FT8XX_EVE::init (void)
         reg_id_value = rd8(REG_ID);
         delay(10);
     }
-
     //Clock switch was a success, initialize FT8XX display parameters
     wr8(REG_PCLK, 0);                 // no PCLK on init, wait for init done
     wr8(REG_PWM_DUTY, 0);             // no backlight until init done
 
-    wr8(REG_HCYCLE,  ft8xx_lcd_hcycle);    // total number of clocks per line, incl front/back porch
-    wr8(REG_HSIZE,   ft8xx_lcd_hsize);     // active display width
-    wr8(REG_HOFFSET, ft8xx_lcd_hoffset);   // start of active line
-    wr8(REG_HSYNC0,  ft8xx_lcd_hsync0);    // start of horizontal sync pulse
-    wr8(REG_HSYNC1,  ft8xx_lcd_hsync1);    // end of horizontal sync pulse
-    wr8(REG_CSPREAD, ft8xx_lcd_cspread);
+    wr16(REG_HCYCLE,  ft8xx_lcd_hcycle);    // total number of clocks per line, incl front/back porch
+    wr16(REG_HSIZE,   ft8xx_lcd_hsize);     // active display width
+    wr16(REG_HOFFSET, ft8xx_lcd_hoffset);   // start of active line
+    wr16(REG_HSYNC0,  ft8xx_lcd_hsync0);    // start of horizontal sync pulse
+    wr16(REG_HSYNC1,  ft8xx_lcd_hsync1);    // end of horizontal sync pulse
+    wr16(REG_CSPREAD, ft8xx_lcd_cspread);
 
-    wr8(REG_VCYCLE,  ft8xx_lcd_vcycle);    // total number of lines per screen, incl pre/post
-    wr8(REG_VSIZE,   ft8xx_lcd_vsize);     // active display height       
-    wr8(REG_VOFFSET, ft8xx_lcd_voffset);   // start of active screen
-    wr8(REG_VSYNC0,  ft8xx_lcd_vsync0);    // start of vertical sync pulse
-    wr8(REG_VSYNC1,  ft8xx_lcd_vsync1);    // end of vertical sync pulse
-    wr8(REG_SWIZZLE,  ft8xx_lcd_swizzle);   // FT8XX output to LCD - pin order
-    wr8(REG_PCLK_POL, ft8xx_lcd_pclk_pol);  // LCD data is clocked in on this PCLK edge
+    wr16(REG_VCYCLE,  ft8xx_lcd_vcycle);    // total number of lines per screen, incl pre/post
+    wr16(REG_VSIZE,   ft8xx_lcd_vsize);     // active display height       
+    wr16(REG_VOFFSET, ft8xx_lcd_voffset);   // start of active screen
+    wr16(REG_VSYNC0,  ft8xx_lcd_vsync0);    // start of vertical sync pulse
+    wr16(REG_VSYNC1,  ft8xx_lcd_vsync1);    // end of vertical sync pulse
+    wr16(REG_SWIZZLE,  ft8xx_lcd_swizzle);   // FT8XX output to LCD - pin order
+    wr16(REG_PCLK_POL, ft8xx_lcd_pclk_pol);  // LCD data is clocked in on this PCLK edge
 
     wr8(REG_VOL_PB, ZERO);            // turn recorded audio volume down
     wr8(REG_VOL_SOUND, ZERO);         // turn synthesizer volume down
@@ -221,15 +220,14 @@ void FT8XX_EVE::init (void)
         wr8(REG_PWM_DUTY, duty); // Turn on backlight - ramp up slowly to full brighness
         delay(1);
     }
-
     // If you want to calibrate the touchpanel, uncomment the following lines
     #ifdef FT_80X_ENABLE
     wr8(REG_TOUCH_MODE, FT8XX_TOUCH_MODE_CONTINUOUS);    //Touch enabled
     #endif
 
     #ifdef FT_81X_ENABLE
-    wr8(REG_CTOUCH_MODE, FT8XX_TOUCH_MODE_CONTINUOUS);      // Touch enabled
-    wr8(REG_CTOUCH_EXTENDED, 1);                            // Compatibility mode
+        wr8(REG_CTOUCH_MODE, FT8XX_TOUCH_MODE_CONTINUOUS);      // Touch enabled
+        wr8(REG_CTOUCH_EXTENDED, 1);                            // Compatibility mode
     #endif
     touchpanel_init();
 }
@@ -262,7 +260,7 @@ void FT8XX_EVE::touchpanel_init (void)
     }   while ((cmdBufferWr != 0) && (cmdBufferWr != cmdBufferRd));
 
     #ifdef TOUCH_PANEL_CAPACITIVE
-        wr8(REG_CTOUCH_EXTENDED, 1);   //Extended touch mode
+        wr8(REG_CTOUCH_EXTENDED, 1);   //Compatibility touch mode
     #endif
 }
 
@@ -889,13 +887,13 @@ void FT8XX_EVE::draw_point (unsigned int x, unsigned int y, unsigned int r)
 #if MAX_SLIDER_NB > 0
 void FT8XX_EVE::CMD_slider (unsigned char number, unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int opt, unsigned int v, unsigned int r)
 {    
-    st_Slider[number].X1 = x;    //initialise variable with input values
-    st_Slider[number].Y1 = y;
-    st_Slider[number].Width = w;
-    st_Slider[number].Height = h;
+    st_Slider[number].x = x;    //initialise variable with input values
+    st_Slider[number].y = y;
+    st_Slider[number].w = w;
+    st_Slider[number].h = h;
     st_Slider[number].opt = opt;
-    st_Slider[number].Value = v;
-    st_Slider[number].Range = r;
+    st_Slider[number].val = v;
+    st_Slider[number].range = r;
     slider_nb++;
 }
 
@@ -915,162 +913,56 @@ void FT8XX_EVE::CMD_slider (unsigned char number, unsigned int x, unsigned int y
 void FT8XX_EVE::draw_slider (STSlider *st_Slider)
 {
     write_dl_long(CMD_SLIDER);
-    write_dl_int(st_Slider->X1);     // x
-    write_dl_int(st_Slider->Y1);     // y
-    write_dl_int(st_Slider->Width);  // width
-    write_dl_int(st_Slider->Height); // height
+    write_dl_int(st_Slider->x);     // x
+    write_dl_int(st_Slider->y);     // y
+    write_dl_int(st_Slider->w);  // width
+    write_dl_int(st_Slider->h); // height
     write_dl_int(st_Slider->opt);    // option
-    write_dl_int(st_Slider->Value);  // 16 bit value
-    write_dl_long(st_Slider->Range); // 32 bit range (stay in 4 bytes multiples)
+    write_dl_int(st_Slider->val);  // 16 bit value
+    write_dl_long(st_Slider->range); // 32 bit range (stay in 4 bytes multiples)
 }
 
-void FT8XX_EVE::modify_slider_value (STSlider *st_Slider, unsigned int v)
+void FT8XX_EVE::modify_slider (STSlider *st_Slider, unsigned char type, unsigned int value)
 {
-    st_Slider->Value = v;
+    switch (type)
+    {
+        case SLIDER_X:
+            st_Slider->x = value;
+        break;
+
+        case SLIDER_Y:
+            st_Slider->y = value;
+        break;
+
+        case SLIDER_W:
+            st_Slider->w = value;
+        break;
+
+        case SLIDER_H:
+            st_Slider->h = value;
+        break;
+
+        case SLIDER_OPT:
+            st_Slider->opt = value;
+        break;
+
+        case SLIDER_VAL:
+            if (value > st_Slider->range)
+            {
+                st_Slider->val = st_Slider->range;
+            }
+            else
+            st_Slider->val = value;
+        break;
+
+        case SLIDER_RANGE:
+            st_Slider->range = value;
+        break;
+
+        default:
+        break;
+    }
 }
-
-//***unsigned int FT_slider_update (STTouch touch_read, STSlider *st_Slider)***//
-//Description : Function reads touch data and update slider value upon movement
-//
-//Function prototype : unsigned int FT_slider_update (STTouch touch_read, STSlider *st_Slider)
-//
-//Enter params       : STTouch   : Struct that contains touch data
-//                     *st_Slider : Struct that contains slider to update
-//
-//Exit params        : unsigned int : new slider value upon its range
-//
-//Function call      : unsigned int = FT_slider_update (stTouch, &st_Slider[0]);
-//
-//Intellitrol  08/07/2016
-//******************************************************************************
-// unsigned int FT8XX_EVE::slider_update (STTouch touch_read, STSlider *st_Slider, STWindow *st_Window)
-// {
-//     static unsigned int old_value1 = 0, new_value1 = 0, old_value2 = 0, new_value2 = 0,
-//                         old_value3 = 0, new_value3 = 0, old_value4 = 0, new_value4 = 0, old_value5 = 0, new_value5 = 0;
-//     //Verify that actual touch position is inside specified slider positions
-//     //if its the case, calculate new value proportional to range
-//     unsigned int yMin = (st_Slider->Y1 - (3 * st_Slider->Height));     //min y value
-//     unsigned int yMax = (st_Slider->Y1  + (3 * st_Slider->Height));    //max y value
-//     unsigned int xMin = (st_Slider->X1);            //min x value
-//     unsigned int xMax = (st_Slider->X1 + st_Slider->Width);            //max x value
-//     unsigned int step = ((xMax - xMin)  / st_Slider->Range);
-
-//     if (st_Window->touch_tag == 1)
-//     {
-//         if ((touch_read.Y0 >= yMin) && (touch_read.Y0 <= yMax))
-//         {
-//         if ((touch_read.X0 >= xMin) && (touch_read.X0 <= xMax))
-//         {
-//             old_value1 = new_value1;                    //calculate new value
-//             new_value1 = ((touch_read.X0 - xMin) / step); //
-//             st_Slider->Value = new_value1;              //
-//             return (new_value1);                       //
-//             //st_Slider->Value = new_value;
-//         }
-//         else {
-//             st_Slider->Value = old_value1;
-//             return (old_value1);
-//         }
-//         }
-//         else {
-//         st_Slider->Value = old_value1;
-//         return (old_value1);
-//         }
-//     }
-
-//     else if (st_Window->touch_tag == 2)
-//     {
-//         if ((touch_read.Y1 >= yMin) && (touch_read.Y1 <= yMax))
-//         {
-//         if ((touch_read.X1 >= xMin) && (touch_read.X1 <= xMax))
-//         {
-//             old_value2 = new_value2;                    //calculate new value
-//             new_value2 = ((touch_read.X1 - xMin) / step); //
-//             st_Slider->Value = new_value2;              //
-//             return (new_value2);                       //
-//             //st_Slider->Value = new_value;
-//         }
-//         else {
-//             st_Slider->Value = old_value2;
-//             return (old_value2);
-//         }
-//         }
-//         else {
-//         st_Slider->Value = old_value2;
-//         return (old_value2);
-//         }
-//     }
-
-//     else if (st_Window->touch_tag == 3)
-//     {
-//         if ((touch_read.Y2 >= yMin) && (touch_read.Y2 <= yMax))
-//         {
-//         if ((touch_read.X2 >= xMin) && (touch_read.X2 <= xMax))
-//         {
-//             old_value3 = new_value3;                    //calculate new value
-//             new_value3 = ((touch_read.X2 - xMin) / step); //
-//             st_Slider->Value = new_value3;              //
-//             return (new_value3);                       //
-//             //st_Slider->Value = new_value;
-//         }
-//         else {
-//             st_Slider->Value = old_value3;
-//             return (old_value3);
-//         }
-//         }
-//         else {
-//         st_Slider->Value = old_value3;
-//         return (old_value3);
-//         }
-//     }
-
-//     else if (st_Window->touch_tag == 4)
-//     {
-//         if ((touch_read.Y3 >= yMin) && (touch_read.Y3 <= yMax))
-//         {
-//         if ((touch_read.X3 >= xMin) && (touch_read.X3 <= xMax))
-//         {
-//             old_value4 = new_value4;                    //calculate new value
-//             new_value4 = ((touch_read.X3 - xMin) / step); //
-//             st_Slider->Value = new_value4;              //
-//             return (new_value4);                       //
-//             //st_Slider->Value = new_value;
-//         }
-//         else {
-//             st_Slider->Value = old_value4;
-//             return (old_value4);
-//         }
-//         }
-//         else {
-//         st_Slider->Value = old_value4;
-//         return (old_value4);
-//         }
-//     }
-
-//     else if (st_Window->touch_tag == 5)
-//     {
-//         if ((touch_read.Y4 >= yMin) && (touch_read.Y4 <= yMax))
-//         {
-//         if ((touch_read.X4 >= xMin) && (touch_read.X4 <= xMax))
-//         {
-//             old_value5 = new_value5;                    //calculate new value
-//             new_value5 = ((touch_read.X4 - xMin) / step); //
-//             st_Slider->Value = new_value5;              //
-//             return (new_value5);                       //
-//             //st_Slider->Value = new_value;
-//         }
-//         else {
-//             st_Slider->Value = old_value5;
-//             return (old_value5);
-//         }
-//         }
-//         else {
-//         st_Slider->Value = old_value5;
-//         return (old_value5);
-//         }
-//     }
-//     else return (st_Slider->Value);
-// }
 
 unsigned char FT8XX_EVE::get_slider_nb (void)
 {
@@ -1118,7 +1010,6 @@ void FT8XX_EVE::CMD_button (unsigned char number, unsigned int x, unsigned int y
         cnt++;
     }
     
-
     //this part of the code ensures that transactions are 4 bytes wide. if
     //string byte # is not a multiple of 4, data is appended with null bytes
     st_Button[number].str[cnt] = 0x00;
@@ -1164,6 +1055,39 @@ void FT8XX_EVE::draw_button (STButton *st_Button)
     {
         write_dl_char(st_Button->str[cnt]);
         cnt++;
+    }
+}
+
+void FT8XX_EVE::modify_button (STButton *st_Button, unsigned char type, unsigned int value)
+{
+    switch (type)
+    {
+        case BUTTON_X:
+            st_Button->x = value;
+        break;
+
+        case BUTTON_Y:  
+            st_Button->y = value;
+        break;
+
+        case BUTTON_W:
+            st_Button->w = value;
+        break;
+
+        case BUTTON_H:
+            st_Button->h = value;
+        break;
+
+        case BUTTON_FONT:
+            st_Button->font = value;
+        break;
+
+        case BUTTON_OPT:
+            st_Button->opt = value;
+        break;
+
+        default:
+        break; 
     }
 }
 
@@ -1285,6 +1209,39 @@ void FT8XX_EVE::draw_gradient (STGradient *st_Gradient)
     write_dl_long(st_Gradient->rgb1);    //         
 }
 
+void FT8XX_EVE::modify_gradient (STGradient *st_Gradient, unsigned char type, unsigned long value)
+{
+    switch(type)
+    {
+        case GRADIENT_X0:
+            st_Gradient->x0 = value;
+        break;
+
+        case GRADIENT_Y0:
+            st_Gradient->y0 = value;
+        break;
+
+        case GRADIENT_RGB0:
+            st_Gradient->rgb0 = value;
+        break;
+
+        case GRADIENT_X1:
+            st_Gradient->x1 = value;
+        break;
+
+        case GRADIENT_Y1:
+            st_Gradient->y1 = value;
+        break;
+
+        case GRADIENT_RGB1:
+            st_Gradient->rgb1 = value;
+        break;
+
+        default:
+        break;
+    }
+}
+
 unsigned char FT8XX_EVE::get_gradient_nb (void)
 {
     return gradient_nb;
@@ -1345,9 +1302,33 @@ void FT8XX_EVE::draw_number (STNumber *st_Number)
     write_dl_long(st_Number->num); // 32 bit number
 }
 
-void FT8XX_EVE::modify_number (STNumber *st_Number, unsigned long n)
+void FT8XX_EVE::modify_number (STNumber *st_Number, unsigned char type, unsigned long value)
 {
-    st_Number->num = n;
+    switch (type)
+    {
+        case NUMBER_X:
+            st_Number->x = value;
+        break;
+
+        case NUMBER_Y: 
+            st_Number->y = value;
+        break;
+
+        case NUMBER_FONT:
+            st_Number->font = value;
+        break;
+
+        case NUMBER_OPT:
+            st_Number->opt = value;
+        break;
+
+        case NUMBER_VAL:
+            st_Number->num = value;
+        break;
+
+        default:
+        break;
+    }
 }
 
 unsigned char FT8XX_EVE::get_number_nb (void)
@@ -1787,16 +1768,50 @@ void FT8XX_EVE::draw_scrollbar (STScrollbar *st_Scrollbar)
     write_dl_int(st_Scrollbar->range);
 }
 
-void FT8XX_EVE::modify_scrollbar (STScrollbar *st_Scrollbar, unsigned int new_value)
+void FT8XX_EVE::modify_scrollbar (STScrollbar *st_Scrollbar, unsigned char type, unsigned int value)
 {
-    if (new_value > st_Scrollbar->range)
+    switch (type)
     {
-        st_Scrollbar->val = st_Scrollbar->range;
+        case SCROLLBAR_X:
+            st_Scrollbar->x = value;
+        break;
+
+        case SCROLLBAR_Y:
+            st_Scrollbar->y = value;
+        break;
+
+        case SCROLLBAR_WIDTH:
+            st_Scrollbar->w = value;
+        break;
+
+        case SCROLLBAR_HEIGHT:
+            st_Scrollbar->h = value;
+        break;
+
+        case SCROLLBAR_OPT:
+            st_Scrollbar->opt = value;
+        break;
+
+        case SCROLLBAR_VAL:
+            st_Scrollbar->val = value;
+        break;
+        
+        case SCROLLBAR_SIZE:
+            st_Scrollbar->size = value;
+        break;
+
+        case SCROLLBAR_RANGE:
+            if (value > st_Scrollbar->range)
+            {
+                st_Scrollbar->val = st_Scrollbar->range;
+            }
+            else
+            st_Scrollbar->range = value;
+        break;
+
+        default:
+        break;
     }
-    else
-    {
-        st_Scrollbar->val = new_value;
-    }   
 }
 
 unsigned char FT8XX_EVE::get_scrollbar_nb (void)
@@ -1870,9 +1885,45 @@ void FT8XX_EVE::draw_gauge (STGauge *st_Gauge)
     write_dl_int(st_Gauge->range);
 }
 
-void FT8XX_EVE::modify_gauge (STGauge *st_Gauge, unsigned int val)
+void FT8XX_EVE::modify_gauge (STGauge *st_Gauge, unsigned char type, unsigned int value)
 {
-    st_Gauge->val = val;
+    switch(type)
+    {
+        case GAUGE_X:
+            st_Gauge->x = value;
+        break;
+
+        case GAUGE_Y:
+            st_Gauge->y = value;
+        break;
+
+        case GAUGE_RADIUS:
+            st_Gauge->r = value;
+        break;
+
+        case GAUGE_OPT:
+            st_Gauge->opt = value;
+        break;
+
+        case GAUGE_MAJ:
+            st_Gauge->maj = value;
+        break;
+
+        case GAUGE_MIN:
+            st_Gauge->min = value;
+        break;
+
+        case GAUGE_VAL:
+            st_Gauge->val = value;
+        break;
+
+        case GAUGE_RANGE:
+            st_Gauge->range = value;
+        break;
+
+        default:
+        break;
+    }
 }
 
 unsigned char FT8XX_EVE::get_gauge_nb (void)

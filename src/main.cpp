@@ -58,9 +58,22 @@ Ticker second_ticker;
 Ticker water_ticker;
 
 // Interrupts function should come before the setup() and loop()
-ICACHE_RAM_ATTR void water_level_read() 
+ICACHE_RAM_ATTR void water_level_handle() 
 {
-    intelligrow.water_level_flag = 1;
+    if (digitalRead(TANK_ECHO_PIN) == HIGH)
+    {
+        intelligrow.water_level_flag = 0;
+        intelligrow.micros_start = micros();
+    }
+    
+    else
+    {      
+        intelligrow.micros_stop = micros();
+        intelligrow.water_level = ((intelligrow.micros_stop - intelligrow.micros_start) / 58); //(0.03434 / 2) = ~ 1 / 58
+        intelligrow.micros_start = 0;
+        intelligrow.micros_stop = 0;
+        intelligrow.water_level_flag = 0;    
+    }   
 }
 
 // void handleRoot() {
@@ -70,6 +83,9 @@ ICACHE_RAM_ATTR void water_level_read()
 void setup() 
 {
     ESP_init();
+
+    Serial.begin(460800);
+
     Wire.pins(4, 5);
     Wire.begin();                                       // Initialize I2C bus on ESP8266
                                                         // Call Wire.piin() and Wire.begin() before FT8XX_init();
@@ -129,9 +145,7 @@ void setup()
     sensor_update_ticker.attach(0.1, sensor_refresh_ticker);        // Sensors continuous refresh service
     ft8xx_update_ticker.attach_ms(16, ft8xx_display_refresh);       // FT8XX refresh service
     second_ticker.attach(1, light_counter_ticker);                  // 
-    water_ticker.attach_ms(100, water_counter_ticker);              // 
-
-    Serial.begin(460800);
+    water_ticker.attach_ms(100, water_counter_ticker);              //   
 }
 
 void loop()
@@ -214,13 +228,6 @@ void loop()
         ft8xx.clear_touch_tag(); 
     }
 
-    if (intelligrow.water_level_flag == 1)
-    {
-        intelligrow.water_level_flag = 0;
-        intelligrow.pulse_in_duration = pulseIn(TANK_ECHO_PIN, HIGH);
-        intelligrow.water_level = ((intelligrow.pulse_in_duration * 0.034) / 2);
-    }
-
     if (debug_uart_flag == 1)
     {
         debug_uart_flag = 0;
@@ -261,9 +268,9 @@ void loop()
         Serial.write(ByteH); Serial.write(ByteL); 
         Serial.write(0x0D); Serial.write(0x0A);         
         Serial.write("Water level : ");
-        hex_to_ascii(intelligrow.water_level, &ByteH, &ByteL); 
-        Serial.write(ByteH); Serial.write(ByteL); 
-        Serial.write(0x0D); Serial.write(0x0A);  
+        Serial.write(((dec2bcd(intelligrow.water_level) & 0xF0)>>4)+0x30); 
+        Serial.write((dec2bcd(intelligrow.water_level) & 0x0F)+0x30); 
+        Serial.write(0x0D); Serial.write(0x0A);   
         Serial.write("Light counter : ");
         hex_to_ascii(((plant.PLANT_struct.sun_time_counter&0xFF000000)>>24), &ByteH, &ByteL); 
         Serial.write(ByteH); Serial.write(ByteL);  
@@ -282,8 +289,8 @@ void loop()
         hex_to_ascii(((plant.PLANT_struct.sun_remainder&0x0000FF00)>>8), &ByteH, &ByteL); 
         Serial.write(ByteH); Serial.write(ByteL);  
         hex_to_ascii((plant.PLANT_struct.sun_remainder&0x000000FF), &ByteH, &ByteL); 
-        Serial.write(ByteH); Serial.write(ByteL);                          
-        Serial.write(0x0D); Serial.write(0x0A);        
+        Serial.write(ByteH); Serial.write(ByteL);                     
+        Serial.write(0x0D); Serial.write(0x0A); 
         Serial.write(0x0D); Serial.write(0x0A);
         Serial.write(0x0D); Serial.write(0x0A);
         Serial.write(0x0D); Serial.write(0x0A);
@@ -309,7 +316,7 @@ void ESP_init(void)
     intelligrow.inactivity_counter = INACTIVITY_SECOND_COUNTER;
 
     pinMode(TANK_ECHO_PIN, INPUT);      //HC-SR04P ECHO pin is an input
-    attachInterrupt(digitalPinToInterrupt(TANK_ECHO_PIN), water_level_read, RISING);
+    attachInterrupt(digitalPinToInterrupt(TANK_ECHO_PIN), water_level_handle, CHANGE);
 }
 
 // 60Hz display refresh service
@@ -422,14 +429,17 @@ void light_counter_ticker()
 
 void sensor_refresh_ticker()
 {
+    // Get sensors value
     adc_i2c.start_then_read_conversion(ADC_LIGHT_INPUT);
     adc_i2c.start_then_read_conversion(ADC_MOISTURE_INPUT);
     adc_i2c.start_then_read_conversion(ADC_TEMPERATURE_INPUT);  
     adc_i2c.start_then_read_conversion(ADC_BATTERY_MONITOR_INPUT);
 
+    // Initiate an ultrasound sequence on HC-SR04P
+    // Get the water level
     expander_i2c.write_bit(EXPANDER_TANK_TRIG_BIT, 1);
     delayMicroseconds(20);
-    expander_i2c.write_bit(EXPANDER_TANK_TRIG_BIT, 0);
+    expander_i2c.write_bit(EXPANDER_TANK_TRIG_BIT, 0);        
 }
 
 void inactivity_counter_ticker ()

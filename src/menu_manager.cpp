@@ -59,7 +59,7 @@ void MENU_MANAGER::init(void)
     ft8xx.CMD_text(5, 65, 130, 22, OPT_CENTER, "Soil moisture");
     ft8xx.CMD_scrollbar(2, 136, 125, 123, 12, OPT_FLAT, 120, 67, 1650);
     ft8xx.CMD_text(6, 65, 165, 22, OPT_CENTER, "Water level");
-    ft8xx.CMD_scrollbar(3, 136, 160, 123, 12, OPT_FLAT, 120, 67, 4095);
+    ft8xx.CMD_scrollbar(3, 136, 160, 123, 12, OPT_FLAT, 120, 5, 100);
     ft8xx.CMD_text(7, 65, 200, 22, OPT_CENTER, "Battery monitor");
     ft8xx.CMD_scrollbar(4, 136, 195, 123, 12, OPT_FLAT, 120, 67, 1650);
 
@@ -81,35 +81,35 @@ void MENU_MANAGER::init(void)
     ft8xx.CMD_number(5, 356, 180, 22, OPT_CENTER, 59);
     ft8xx.set_touch_tag(FT_PRIM_NUMBER, 5, 13);  
     ft8xx.CMD_text(14, 372, 179, 22, OPT_CENTER, ":");
-    ft8xx.CMD_number(6, 387, 180, 22, OPT_CENTER, 25);
+    ft8xx.CMD_number(6, 387, 180, 22, OPT_CENTER, 50);
     ft8xx.set_touch_tag(FT_PRIM_NUMBER, 6, 14);  
 
     ft8xx.CMD_button(6, 400, 120, 62, 27, 22, OPT_FLAT, "Save");
     ft8xx.set_touch_tag(FT_PRIM_BUTTON, 6, 15);
 
     // Plant growth menu
-    ft8xx.CMD_text(15, 398, 218, 20, OPT_CENTER, "Light");
-    ft8xx.CMD_toggle(0, 424, 215, 30, 20, OPT_FLAT, TOGGLE_OFF, "On\xFFOff");
+    ft8xx.CMD_text(15, 180, 238, 20, OPT_CENTER, "Light");
+    ft8xx.CMD_toggle(0, 210, 235, 30, 20, OPT_FLAT, 0, "On\xFFOff");
     ft8xx.set_touch_tag(FT_PRIM_TOGGLE, 0, 17);
-    ft8xx.CMD_text(16, 390, 238, 20, OPT_CENTER, "Moisture");
-    ft8xx.CMD_toggle(1, 424, 235, 30, 20, OPT_FLAT, TOGGLE_OFF, "On\xFFOff");
+    ft8xx.CMD_text(16, 280, 238, 20, OPT_CENTER, "Moisture");
+    ft8xx.CMD_toggle(1, 315, 235, 30, 20, OPT_FLAT, 0, "On\xFFOff");
     ft8xx.set_touch_tag(FT_PRIM_TOGGLE, 1, 18);
-    ft8xx.CMD_text(17, 384, 258, 20, OPT_CENTER, "Temperature");
-    ft8xx.CMD_toggle(2, 424, 255, 30, 20, OPT_FLAT, TOGGLE_OFF, "On\xFFOff");
+    ft8xx.CMD_text(17, 390, 238, 20, OPT_CENTER, "Temperature");
+    ft8xx.CMD_toggle(2, 435, 235, 30, 20, OPT_FLAT, 0, "On\xFFOff");
     ft8xx.set_touch_tag(FT_PRIM_TOGGLE, 2, 19);
 
     // Garden parameters menu
     ft8xx.CMD_text(18, 96, 60, 22, OPT_CENTER, "Water tank - Adjust limits");
-    ft8xx.CMD_gauge(0, 48, 110, 45, OPT_NOBACK, 5, 5, plant.GARDEN_struct.water_max_level, plant.GARDEN_struct.water_min_level);
+    ft8xx.CMD_gauge(0, 48, 110, 45, OPT_NOBACK, 5, 5, intelligrow.water_level, plant.GARDEN_struct.water_empty_level);
     ft8xx.CMD_button(8, 105, 105, 30, 30, 22, OPT_FLAT, "+");
     ft8xx.set_touch_tag(FT_PRIM_BUTTON, 8, 20);
     ft8xx.CMD_button(9, 145, 105, 30, 30, 22, OPT_FLAT, "-");
     ft8xx.set_touch_tag(FT_PRIM_BUTTON, 9, 21);
-    ft8xx.CMD_toggle(3, 115, 80, 50, 22, OPT_FLAT, TOGGLE_OFF, "Max\xFFMin");
+    ft8xx.CMD_toggle(3, 115, 80, 50, 22, OPT_FLAT, TOGGLE_OFF, "Min\xFFMax");
     ft8xx.set_touch_tag(FT_PRIM_TOGGLE, 3, 22);
-    ft8xx.CMD_number(7, 135, 150, 22, OPT_CENTER, plant.GARDEN_struct.water_max_level);
+    ft8xx.CMD_number(7, 135, 150, 22, OPT_CENTER, plant.GARDEN_struct.water_empty_level);
     ft8xx.CMD_text(19, 157, 150, 22, OPT_CENTER, "cm");
-    ft8xx.CMD_text(20, 63, 150, 22, OPT_CENTER, "Max water level:");
+    ft8xx.CMD_text(20, 63, 150, 22, OPT_CENTER, "Empty level:");
     ft8xx.CMD_text(21, 87, 170, 22, OPT_CENTER, "Send alert if empty?");
     ft8xx.CMD_toggle(4, 65, 190, 40, 22, OPT_FLAT, TOGGLE_OFF, "Yes\xFFNo");
     ft8xx.set_touch_tag(FT_PRIM_TOGGLE, 4, 23);
@@ -125,12 +125,39 @@ void MENU_MANAGER::init(void)
 
     ft8xx.CMD_text(25, 330, 130, 22, OPT_CENTER, "Adjust plant growth setpoints");
 
-    ft8xx.CMD_text(26, 215, 160, 22, OPT_CENTER, "Light");
-    ft8xx.CMD_number(9, 455, 160, 22, OPT_CENTER, plant.PLANT_struct.sun_intensity_setp);
+    ft8xx.CMD_text(26, 270, 160, 22, OPT_CENTER, "Light");
+    ft8xx.CMD_number(9, 415, 160, 22, OPT_CENTER, plant.PLANT_struct.sun_intensity_setp);
+    ft8xx.CMD_button(12, 310, 145, 30, 30, 22, OPT_FLAT, "+");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 12, 26);
+    ft8xx.CMD_button(13, 350, 145, 30, 30, 22, OPT_FLAT, "-");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 13, 27);       
 
-    ft8xx.CMD_text(27, 215, 200, 22, OPT_CENTER, "Moisture");
-    ft8xx.CMD_number(10, 455, 200, 22, OPT_CENTER, plant.PLANT_struct.soil_moisture_setp);
+    ft8xx.CMD_text(27, 260, 200, 22, OPT_CENTER, "Moisture");
+    ft8xx.CMD_number(10, 415, 200, 22, OPT_CENTER, plant.PLANT_struct.soil_moisture_setp);
+    ft8xx.CMD_button(14, 310, 185, 30, 30, 22, OPT_FLAT, "+");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 14, 28);
+    ft8xx.CMD_button(15, 350, 185, 30, 30, 22, OPT_FLAT, "-");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 15, 29);   
 
+    // Graphic primitives
+    ft8xx.CMD_number(11, 13, 49, 20, OPT_CENTER, adc_i2c.ADC_struct.adc_max_value); // Light Y axis max
+    ft8xx.CMD_number(12, 38, 49, 20, OPT_CENTER, adc_i2c.ADC_struct.adc_max_value); // Moist Y axis max
+    ft8xx.CMD_number(13, 63, 49, 20, OPT_CENTER, 50);                               // Temp Y axis max
+
+    ft8xx.CMD_number(14, 38, 49, 20, OPT_CENTER, plant.PLANT_struct.sun_intensity_setp); // Light y axis setpoint
+    ft8xx.CMD_number(15, 63, 49, 20, OPT_CENTER, plant.PLANT_struct.soil_moisture_setp); // Moist Y axis setpoint
+
+    // ADDED to GARDEN PARAMETERS menu
+    ft8xx.CMD_text(28, 260, 240, 22, OPT_CENTER, "Enlightment");
+    ft8xx.CMD_button(16, 310, 225, 30, 30, 22, OPT_FLAT, "+");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 16, 30);  
+    ft8xx.CMD_button(17, 350, 225, 30, 30, 22, OPT_FLAT, "-");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 17, 31); 
+    ft8xx.CMD_number(16, 406, 240, 22, OPT_CENTER, plant.PLANT_struct.sun_time_h);   
+    ft8xx.CMD_text(29, 445, 240, 22, OPT_CENTER, "Hours"); 
+
+    ft8xx.CMD_text(30, 455, 160, 22, OPT_CENTER, "Lux"); 
+    ft8xx.CMD_text(31, 450, 200, 22, OPT_CENTER, "RH"); 
 
     // Initialize menu counters based on FT800 primitives
     menu_struct.day_counter = 2;   
@@ -163,6 +190,7 @@ void MENU_MANAGER::display (unsigned char menu)
 {    
     unsigned int i = 0, j = 0;
     unsigned char touch_tag = 0;
+    unsigned int y_val = 0, x_val = 0;
     touch_tag = ft8xx.get_touch_tag();  // Fetch the latest touch tag value
 
     // Before displaying the screensaver, update the primitives variables
@@ -173,7 +201,7 @@ void MENU_MANAGER::display (unsigned char menu)
             ft8xx.modify_clock_hms(&st_Clock[0], rtc.rtc_struct.hour, rtc.rtc_struct.minute, rtc.rtc_struct.second);
             ft8xx.modify_element_string(1, FT_PRIM_TEXT, rtc.rtc_struct.day_str);
             ft8xx.modify_element_string(2, FT_PRIM_TEXT, rtc.rtc_struct.month_str);
-            ft8xx.modify_number(&st_Number[0], rtc.rtc_struct.date);
+            ft8xx.modify_number(&st_Number[0], NUMBER_VAL, rtc.rtc_struct.date);
             
             // Draw a touchable gradient and main text "Intelligrow - Autonomous garden"
             //
@@ -224,51 +252,57 @@ void MENU_MANAGER::display (unsigned char menu)
         ///////////////////////////////////////////////////////////////////////////////////////////
         case GARDEN_PARAMETERS_MENU:
 
-            ft8xx.modify_gauge(&st_Gauge[0], intelligrow.water_level);
+            if (intelligrow.water_level >= plant.GARDEN_struct.water_empty_level)
+            {
+                ft8xx.modify_gauge(&st_Gauge[0], GAUGE_VAL, plant.GARDEN_struct.water_empty_level);
+            }
+            else {ft8xx.modify_gauge(&st_Gauge[0], GAUGE_VAL, intelligrow.water_level);}
+            
 
             // Touch tag on the "+" button of water level       
             if (touch_tag == st_Button[8].touch_tag)
             {        
-                if (st_Toggle[3].state == TOGGLE_OFF)   // Water max level
+                if (st_Toggle[3].state == TOGGLE_OFF)   // Water min level
                 {
-                    plant.GARDEN_struct.water_max_level++;
-                    ft8xx.modify_number(&st_Number[7], plant.GARDEN_struct.water_max_level);    
+                    plant.GARDEN_struct.water_empty_level++;
+                    ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_empty_level);   
+                    ft8xx.modify_gauge(&st_Gauge[0], GAUGE_RANGE, plant.GARDEN_struct.water_empty_level);  
                 }        
                 else
                 {
-                    plant.GARDEN_struct.water_min_level++;
-                    ft8xx.modify_number(&st_Number[7], plant.GARDEN_struct.water_min_level);    
+                    plant.GARDEN_struct.water_full_level++;
+                    ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_full_level);       
                 }               
             }
 
             // Touch tag on the "-" button of water level
             if (touch_tag == st_Button[9].touch_tag)
             {
-                if (st_Toggle[3].state == TOGGLE_OFF)   // Water max level
+                if (st_Toggle[3].state == TOGGLE_OFF)   // Water min level
                 {
-                    if (--plant.GARDEN_struct.water_max_level < 1){plant.GARDEN_struct.water_max_level = 1;}
-                    ft8xx.modify_number(&st_Number[7], plant.GARDEN_struct.water_max_level);    
+                    if (--plant.GARDEN_struct.water_empty_level < 1){plant.GARDEN_struct.water_empty_level = 1;}
+                    ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_empty_level);   
+                    ft8xx.modify_gauge(&st_Gauge[0], GAUGE_RANGE, plant.GARDEN_struct.water_empty_level); 
                 }        
                 else
                 {
-                    if (--plant.GARDEN_struct.water_min_level < 1){plant.GARDEN_struct.water_min_level = 1;}
-                    ft8xx.modify_number(&st_Number[7], plant.GARDEN_struct.water_min_level);    
-                } 
-                                                             
+                    if (--plant.GARDEN_struct.water_full_level < 1){plant.GARDEN_struct.water_full_level = 1;}
+                    ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_full_level);                       
+                }                                                     
             }
 
             // Touch tag on the "+" button of Pump on-time
             if (touch_tag == st_Button[10].touch_tag)
             {                
                 plant.GARDEN_struct.pump_on_time++;
-                ft8xx.modify_number(&st_Number[8], plant.GARDEN_struct.pump_on_time);
+                ft8xx.modify_number(&st_Number[8], NUMBER_VAL, plant.GARDEN_struct.pump_on_time);
             }
 
             // Touch tag on the "-" button of Pump on-time
             if (touch_tag == st_Button[11].touch_tag)
             {                
                 if (--plant.GARDEN_struct.pump_on_time < 1){plant.GARDEN_struct.pump_on_time = 1;}
-                ft8xx.modify_number(&st_Number[8], plant.GARDEN_struct.pump_on_time);
+                ft8xx.modify_number(&st_Number[8], NUMBER_VAL, plant.GARDEN_struct.pump_on_time);
             }
 
             // Touch tag on the Max / Min water level adjust toggle
@@ -277,14 +311,14 @@ void MENU_MANAGER::display (unsigned char menu)
                 if (st_Toggle[3].state == TOGGLE_OFF)
                 {
                     st_Toggle[3].state = TOGGLE_ON;
-                    ft8xx.modify_element_string(20, FT_PRIM_TEXT, "Min water level:");
-                    ft8xx.modify_number(&st_Number[7], plant.GARDEN_struct.water_min_level);
+                    ft8xx.modify_element_string(20, FT_PRIM_TEXT, "Full level:");
+                    ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_full_level);
                 }
                 else
                 {
                     st_Toggle[3].state = TOGGLE_OFF;
-                    ft8xx.modify_element_string(20, FT_PRIM_TEXT, "Max water level:");
-                    ft8xx.modify_number(&st_Number[7], plant.GARDEN_struct.water_max_level);
+                    ft8xx.modify_element_string(20, FT_PRIM_TEXT, "Empty level:");
+                    ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_empty_level);
                 }
                 
             }
@@ -300,7 +334,74 @@ void MENU_MANAGER::display (unsigned char menu)
                 {
                     st_Toggle[4].state = TOGGLE_OFF;
                 }              
-            }       
+            }   
+
+            // Touch tag on the Light + setpoint button
+            if (touch_tag == st_Button[12].touch_tag)
+            {   
+                plant.PLANT_struct.sun_intensity_setp += 25;
+                if (plant.PLANT_struct.sun_intensity_setp >= adc_i2c.ADC_struct.adc_max_value)
+                {
+                    plant.PLANT_struct.sun_intensity_setp = adc_i2c.ADC_struct.adc_max_value;
+                    
+                }
+                ft8xx.modify_number(&st_Number[9], NUMBER_VAL, plant.PLANT_struct.sun_intensity_setp);
+            }   
+
+            // Touch tag on the Light - setpoint button
+            if (touch_tag == st_Button[13].touch_tag)
+            {   
+                if (plant.PLANT_struct.sun_intensity_setp >= 25)
+                {
+                    plant.PLANT_struct.sun_intensity_setp -= 25;
+                    
+                }
+                ft8xx.modify_number(&st_Number[9], NUMBER_VAL, plant.PLANT_struct.sun_intensity_setp);
+            }             
+
+
+            // Touch tag on the Light + setpoint button
+            if (touch_tag == st_Button[14].touch_tag)
+            {   
+                plant.PLANT_struct.soil_moisture_setp += 25;
+                if (plant.PLANT_struct.soil_moisture_setp >= adc_i2c.ADC_struct.adc_max_value)
+                {
+                    plant.PLANT_struct.soil_moisture_setp = adc_i2c.ADC_struct.adc_max_value;
+                    
+                }
+                ft8xx.modify_number(&st_Number[10], NUMBER_VAL, plant.PLANT_struct.soil_moisture_setp);
+            }   
+
+            // Touch tag on the Light - setpoint button
+            if (touch_tag == st_Button[15].touch_tag)
+            {   
+                if (plant.PLANT_struct.soil_moisture_setp >= 25)
+                {
+                    plant.PLANT_struct.soil_moisture_setp -= 25;
+                    
+                }
+                ft8xx.modify_number(&st_Number[10], NUMBER_VAL, plant.PLANT_struct.soil_moisture_setp);
+            } 
+
+            // Touch tag on the Enlightment + button
+            if (touch_tag == st_Button[16].touch_tag)
+            {
+                if (++plant.PLANT_struct.sun_time_h > 16)
+                {
+                    plant.PLANT_struct.sun_time_h = 16;
+                }
+                ft8xx.modify_number(&st_Number[16], NUMBER_VAL, plant.PLANT_struct.sun_time_h);
+            }
+
+            // Touch tag on the Enlightment - button
+            if (touch_tag == st_Button[17].touch_tag)
+            {
+                if (--plant.PLANT_struct.sun_time_h < 8)
+                {
+                    plant.PLANT_struct.sun_time_h = 8;
+                }
+                ft8xx.modify_number(&st_Number[16], NUMBER_VAL, plant.PLANT_struct.sun_time_h);
+            }            
 
             ft8xx.start_new_dl();					// Start a new display list, reset ring buffer and ring pointer
 
@@ -340,12 +441,33 @@ void MENU_MANAGER::display (unsigned char menu)
             ft8xx.draw_text(&st_Text[25]);                      // Adjust plant growth setpoints
 
             ft8xx.draw_text(&st_Text[26]);                      // Light
+            ft8xx.write_dl_long(TAG(st_Button[12].touch_tag));  // "+"
+            ft8xx.draw_button(&st_Button[12]);
+            ft8xx.write_dl_long(TAG(st_Button[13].touch_tag));  // "+"
+            ft8xx.draw_button(&st_Button[13]);
             ft8xx.draw_number(&st_Number[9]);                   // 
+            ft8xx.draw_text(&st_Text[30]);                      // Lux  
 
 
             ft8xx.draw_text(&st_Text[27]);                      // Moisture
+            ft8xx.write_dl_long(TAG(st_Button[14].touch_tag));  // "+"
+            ft8xx.draw_button(&st_Button[14]);
+            ft8xx.write_dl_long(TAG(st_Button[15].touch_tag));  // "+"
+            ft8xx.draw_button(&st_Button[15]);            
             ft8xx.draw_number(&st_Number[10]);                  //
-                      
+            ft8xx.draw_text(&st_Text[31]);                      // %RH    
+
+
+            ft8xx.draw_text(&st_Text[28]);                      // Enlightment
+            ft8xx.write_dl_long(TAG(st_Button[16].touch_tag));  // "+"
+            ft8xx.draw_button(&st_Button[16]);
+            ft8xx.write_dl_long(TAG(st_Button[17].touch_tag));  // "+"
+            ft8xx.draw_button(&st_Button[17]);            
+            ft8xx.draw_number(&st_Number[16]);                  //      
+            ft8xx.draw_text(&st_Text[29]);                      // Hours      
+
+            
+                    
 
             // Return button
             ft8xx.write_dl_long(TAG(st_Button[3].touch_tag));  
@@ -393,19 +515,19 @@ void MENU_MANAGER::display (unsigned char menu)
             // Graphic background
             
             GRAPH_struct.y_min = 45;
-            GRAPH_struct.y_max = 205;
-            GRAPH_struct.x_min = 10;
-            GRAPH_struct.x_max = 470;
+            GRAPH_struct.y_max = 210;
+            GRAPH_struct.x_min = 0;
+            GRAPH_struct.x_max = 480;
 
             // Graphic axis
             GRAPH_struct.axis_y_min = 55;
             GRAPH_struct.axis_y_max = 195;
-            GRAPH_struct.axis_y_x_pos = 20;
+            GRAPH_struct.axis_y_x_pos = 30;
             GRAPH_struct.axis_y_wanted_tick = GRAPH_Y_TICK;
             GRAPH_struct.axis_y_mark = ((GRAPH_struct.axis_y_max - GRAPH_struct.axis_y_min)/GRAPH_struct.axis_y_wanted_tick);
 
-            GRAPH_struct.axis_x_min = 20;
-            GRAPH_struct.axis_x_max = 452;
+            GRAPH_struct.axis_x_min = 30;
+            GRAPH_struct.axis_x_max = 462;
             GRAPH_struct.axis_x_y_pos = 195;
             GRAPH_struct.axis_x_wanted_tick = GRAPH_X_TICK;
             GRAPH_struct.axis_x_mark = ((GRAPH_struct.axis_x_max - GRAPH_struct.axis_x_min)/GRAPH_struct.axis_x_wanted_tick);
@@ -437,7 +559,12 @@ void MENU_MANAGER::display (unsigned char menu)
                 ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_y_x_pos - 3, GRAPH_struct.axis_x_y_pos - (i*GRAPH_struct.axis_y_mark), 0, 0));
                 ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_y_x_pos + 3, GRAPH_struct.axis_x_y_pos - (i*GRAPH_struct.axis_y_mark), 0, 0));                 
             }  
-            ft8xx.write_dl_long(END());   
+            ft8xx.write_dl_long(END());  
+            // Display origin '0'
+            ft8xx.write_dl_long(BEGIN(BITMAPS));
+            ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_x_min - 10, GRAPH_struct.axis_y_max, 20, '0'));
+            ft8xx.write_dl_long(END());  
+             
             ft8xx.write_dl_long(COLOR_RGB(164,164,164));                                // Set points color  
             ft8xx.write_dl_long(BEGIN(POINTS));
             ft8xx.write_dl_long(POINT_SIZE(16));   
@@ -455,53 +582,76 @@ void MENU_MANAGER::display (unsigned char menu)
             // Light sensor values
             ft8xx.write_dl_long(COLOR_RGB(255,170,0));                                  // Set points color  
             ft8xx.draw_text(&st_Text[15]);                                              // Light
-        
+            // Display the daily light data points
             ft8xx.write_dl_long(BEGIN(POINTS));
-            ft8xx.write_dl_long(POINT_SIZE(32));   
-
+            ft8xx.write_dl_long(POINT_SIZE(48));   
             if (st_Toggle[0].state == TOGGLE_OFF)
             {
                 for (i=0; i < GRAPH_ACC_VALUE; i++)
                 {
-                    unsigned int y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, 1650, GRAPH_struct.light_sensor_daily[i]);
-                    unsigned int x_val = x_map(GRAPH_struct.axis_x_min, GRAPH_struct.axis_x_max, GRAPH_struct.axis_x_mark, GRAPH_X_MINOR, i);
+                    y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, adc_i2c.ADC_struct.adc_max_value, GRAPH_struct.light_sensor_daily[i]);
+                    x_val = x_map(GRAPH_struct.axis_x_min, GRAPH_struct.axis_x_max, GRAPH_struct.axis_x_mark, GRAPH_X_MINOR, i);
                     ft8xx.write_dl_long(VERTEX2II(x_val, y_val, 0, 0));
                 }
+                ft8xx.write_dl_long(END()); 
+                ft8xx.write_dl_long(BEGIN(LINES));                                          // Display the setpoint line
+                y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, adc_i2c.ADC_struct.adc_max_value, plant.PLANT_struct.sun_intensity_setp);
+                ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_x_min, y_val, 0, 0));
+                ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_x_max, y_val, 0, 0));            
+                ft8xx.write_dl_long(END());
+                ft8xx.modify_number(&st_Number[14], NUMBER_X, 13);
+                ft8xx.modify_number(&st_Number[14], NUMBER_Y, y_val);
+                ft8xx.modify_number(&st_Number[14], NUMBER_VAL, plant.PLANT_struct.sun_intensity_setp);
+                ft8xx.draw_number(&st_Number[11]);           
+                ft8xx.draw_number(&st_Number[14]);
             }
-            ft8xx.write_dl_long(END()); 
+            
 
             // Moist sensor values
             ft8xx.write_dl_long(COLOR_RGB(0,0,255));                                // Set points color  
-            ft8xx.draw_text(&st_Text[16]);                      // Moisture
-                   
+            ft8xx.draw_text(&st_Text[16]);                                          // Moisture
+            // Display the daily moist data points                       
             ft8xx.write_dl_long(BEGIN(POINTS));  
-            ft8xx.write_dl_long(POINT_SIZE(32));          
+            ft8xx.write_dl_long(POINT_SIZE(48));          
             if (st_Toggle[1].state == TOGGLE_OFF)
             {
                 for (i=0; i < GRAPH_ACC_VALUE; i++)
                 {
-                    unsigned int y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, 1650, GRAPH_struct.moist_sensor_daily[i]);
-                    unsigned int x_val = x_map(GRAPH_struct.axis_x_min, GRAPH_struct.axis_x_max, GRAPH_struct.axis_x_mark, GRAPH_X_MINOR, i);
-                    ft8xx.write_dl_long(VERTEX2II(x_val, y_val, 0, 0));
+                    y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, adc_i2c.ADC_struct.adc_max_value, GRAPH_struct.moist_sensor_daily[i]);
+                    x_val = x_map(GRAPH_struct.axis_x_min, GRAPH_struct.axis_x_max, GRAPH_struct.axis_x_mark, GRAPH_X_MINOR, i);
+                    ft8xx.write_dl_long(VERTEX2II(x_val, y_val, 0, 0));               
                 }
+                ft8xx.write_dl_long(END()); 
+                ft8xx.write_dl_long(BEGIN(LINES));                                      // Display the setpoint line    
+                y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, adc_i2c.ADC_struct.adc_max_value, plant.PLANT_struct.soil_moisture_setp);
+                ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_x_min, y_val, 0, 0));
+                ft8xx.write_dl_long(VERTEX2II(GRAPH_struct.axis_x_max, y_val, 0, 0));
+                ft8xx.write_dl_long(END());  
+                ft8xx.modify_number(&st_Number[15], NUMBER_Y, y_val);
+                ft8xx.modify_number(&st_Number[15], NUMBER_X, 13);
+                ft8xx.modify_number(&st_Number[15], NUMBER_VAL, plant.PLANT_struct.soil_moisture_setp);
+                ft8xx.draw_number(&st_Number[12]);           
+                ft8xx.draw_number(&st_Number[15]);            
             }
-            ft8xx.write_dl_long(END()); 
+            
 
             // // Temp sensor values
             ft8xx.write_dl_long(COLOR_RGB(255,0,0));                                // Set points color  
             ft8xx.draw_text(&st_Text[17]);                      // Temperature
             ft8xx.write_dl_long(BEGIN(POINTS)); 
-            ft8xx.write_dl_long(POINT_SIZE(32));              
+            ft8xx.write_dl_long(POINT_SIZE(48));              
             if (st_Toggle[2].state == TOGGLE_OFF)
             {
                 for (i=0; i < GRAPH_ACC_VALUE; i++)
                 {
-                    unsigned int y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, 125, GRAPH_struct.temp_sensor_daily[i]);
-                    unsigned int x_val = x_map(GRAPH_struct.axis_x_min, GRAPH_struct.axis_x_max, GRAPH_struct.axis_x_mark, GRAPH_X_MINOR, i);
+                    y_val = y_map(GRAPH_struct.axis_y_min, GRAPH_struct.axis_y_max, 0, 50, GRAPH_struct.temp_sensor_daily[i]);
+                    x_val = x_map(GRAPH_struct.axis_x_min, GRAPH_struct.axis_x_max, GRAPH_struct.axis_x_mark, GRAPH_X_MINOR, i);
                     ft8xx.write_dl_long(VERTEX2II(x_val, y_val, 0, 0));
                 }
+                ft8xx.write_dl_long(END());
+                ft8xx.draw_number(&st_Number[13]);                                 
             }
-            ft8xx.write_dl_long(END()); 
+             
 
             ft8xx.write_dl_long(COLOR_RGB(255,255,255));                                //        
             // Text and toggle to enable graphic views  
@@ -536,16 +686,16 @@ void MENU_MANAGER::display (unsigned char menu)
             if (touch_tag == st_Number[2].touch_tag)
             {
                 if (++menu_struct.date_counter > 31){menu_struct.date_counter = 1;}
-                ft8xx.modify_number(&st_Number[2], menu_struct.date_counter);
+                ft8xx.modify_number(&st_Number[2], NUMBER_VAL, menu_struct.date_counter);
                 new_time.date = menu_struct.date_counter;
             }
 
             // Touch tag on the month, update the month variable
             if (touch_tag == st_Text[11].touch_tag)
             {
-                if (++menu_struct.month_counter > 11){menu_struct.month_counter = 0;}
-                ft8xx.modify_element_string(11, FT_PRIM_TEXT, month_str_lut[menu_struct.month_counter]);
-                new_time.month = menu_struct.month_counter + 1;
+                if (++menu_struct.month_counter > 12){menu_struct.month_counter = 1;}
+                ft8xx.modify_element_string(11, FT_PRIM_TEXT, month_str_lut[menu_struct.month_counter-1]);
+                new_time.month = menu_struct.month_counter;
             }
 
             // //Touch tag on the year, update the year variable
@@ -561,7 +711,7 @@ void MENU_MANAGER::display (unsigned char menu)
             if (touch_tag == st_Number[4].touch_tag)
             {
                 if (++menu_struct.h_counter > 23){menu_struct.h_counter = 0;}
-                ft8xx.modify_number(&st_Number[4], menu_struct.h_counter);
+                ft8xx.modify_number(&st_Number[4], NUMBER_VAL, menu_struct.h_counter);
                 new_time.hour = menu_struct.h_counter;                  
             }
 
@@ -569,7 +719,7 @@ void MENU_MANAGER::display (unsigned char menu)
             if (touch_tag == st_Number[5].touch_tag)
             {
                 if (++menu_struct.m_counter > 59){menu_struct.m_counter = 0;}
-                ft8xx.modify_number(&st_Number[5], menu_struct.m_counter);     
+                ft8xx.modify_number(&st_Number[5], NUMBER_VAL, menu_struct.m_counter);     
                 new_time.minute = menu_struct.m_counter;                  
             }
 
@@ -577,7 +727,7 @@ void MENU_MANAGER::display (unsigned char menu)
             if (touch_tag == st_Number[6].touch_tag)
             {
                 if (++menu_struct.s_counter > 59){menu_struct.s_counter = 0;}
-                ft8xx.modify_number(&st_Number[6], menu_struct.s_counter);  
+                ft8xx.modify_number(&st_Number[6], NUMBER_VAL, menu_struct.s_counter);  
                 new_time.second = menu_struct.s_counter;                     
             }      
 
@@ -587,11 +737,11 @@ void MENU_MANAGER::display (unsigned char menu)
                 rtc.set_time(new_time);
             } 
 
-            ft8xx.modify_scrollbar(&st_Scrollbar[0], adc_i2c.ADC_struct.light_input);
-            ft8xx.modify_scrollbar(&st_Scrollbar[1], (unsigned int)adc_i2c.ADC_struct.temp_real);
-            ft8xx.modify_scrollbar(&st_Scrollbar[2], adc_i2c.ADC_struct.moisture_input);
-            ft8xx.modify_scrollbar(&st_Scrollbar[3], intelligrow.water_level);  
-            ft8xx.modify_scrollbar(&st_Scrollbar[4], adc_i2c.ADC_struct.battery_monitor_input);  
+            ft8xx.modify_scrollbar(&st_Scrollbar[0], SCROLLBAR_VAL, adc_i2c.ADC_struct.light_input);
+            ft8xx.modify_scrollbar(&st_Scrollbar[1], SCROLLBAR_VAL, (unsigned int)adc_i2c.ADC_struct.temp_real);
+            ft8xx.modify_scrollbar(&st_Scrollbar[2], SCROLLBAR_VAL, adc_i2c.ADC_struct.moisture_input);
+            ft8xx.modify_scrollbar(&st_Scrollbar[3], SCROLLBAR_VAL, intelligrow.water_level);  
+            ft8xx.modify_scrollbar(&st_Scrollbar[4], SCROLLBAR_VAL, adc_i2c.ADC_struct.battery_monitor_input);  
 
 
             ft8xx.start_new_dl();					// Start a new display list, reset ring buffer and ring pointer
