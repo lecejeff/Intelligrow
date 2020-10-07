@@ -23,6 +23,8 @@
 #include <Wire.h>
 //#include <Ticker.h>
 
+// Git test
+
 //Ticker adc_get_sample_ticker;
 //Ticker adc_start_conversion_ticker;
 I2C_ADC ADC_i2c;
