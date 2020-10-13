@@ -64,12 +64,12 @@ void MENU_MANAGER::init(void)
     ft8xx.CMD_scrollbar(4, 136, 195, 123, 12, OPT_FLAT, 120, 67, 1650);
 
     ft8xx.CMD_text(8, 350, 60, 22, OPT_CENTER, "Date / Time");
-    ft8xx.CMD_text(9, 350, 90, 22, OPT_CENTER, "Wednesday");
+    ft8xx.CMD_text(9, 350, 90, 22, OPT_CENTER, "Monday");
     ft8xx.set_touch_tag(FT_PRIM_TEXT, 9, 8);  
     ft8xx.CMD_text(10, 340, 120, 22, OPT_CENTER, "Date : ");
-    ft8xx.CMD_number(2, 375, 120, 22, OPT_CENTER, 28);
+    ft8xx.CMD_number(2, 375, 120, 22, OPT_CENTER, 1);
     ft8xx.set_touch_tag(FT_PRIM_NUMBER, 2, 9);  
-    ft8xx.CMD_text(11, 350, 150, 22, OPT_CENTER, "February");
+    ft8xx.CMD_text(11, 350, 150, 22, OPT_CENTER, "January");
     ft8xx.set_touch_tag(FT_PRIM_TEXT, 11, 10);  
     // ft8xx.CMD_text(12, 330, 180, 22, OPT_CENTER, "Year : ");
     // ft8xx.CMD_number(3, 375, 180, 22, OPT_CENTER, 2020);

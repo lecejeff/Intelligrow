@@ -8,11 +8,11 @@ void RTC_class::init (unsigned char mode)
 {   
     if (mode == RTC_INITIAL_POWERUP)
     {      
-        rtc_struct.hour = dec2bcd(15);
-        rtc_struct.minute = dec2bcd(4);
+        rtc_struct.hour = dec2bcd(8);
+        rtc_struct.minute = dec2bcd(7);
         rtc_struct.second = dec2bcd(0);
-        rtc_struct.day = dec2bcd(WEDNESDAY);
-        rtc_struct.date = dec2bcd(7);
+        rtc_struct.day = dec2bcd(TUESDAY);
+        rtc_struct.date = dec2bcd(13);
         rtc_struct.month = dec2bcd(OCTOBER);
         rtc_struct.year = 2020;
         rtc_struct.day_str = day_str_lut[rtc_struct.day - 1];
