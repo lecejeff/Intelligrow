@@ -8,9 +8,9 @@ void RTC_class::init (unsigned char mode)
 {   
     if (mode == RTC_INITIAL_POWERUP)
     {      
-        rtc_struct.hour = dec2bcd(8);
+        rtc_struct.hour = dec2bcd(21);
         rtc_struct.minute = dec2bcd(7);
-        rtc_struct.second = dec2bcd(0);
+        rtc_struct.second = dec2bcd(30);
         rtc_struct.day = dec2bcd(TUESDAY);
         rtc_struct.date = dec2bcd(13);
         rtc_struct.month = dec2bcd(OCTOBER);

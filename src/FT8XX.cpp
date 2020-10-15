@@ -222,17 +222,17 @@ void FT8XX_EVE::init (void)
     }
     // If you want to calibrate the touchpanel, uncomment the following lines
     #ifdef FT_80X_ENABLE
-    wr8(REG_TOUCH_MODE, FT8XX_TOUCH_MODE_CONTINUOUS);    //Touch enabled
+        wr8(REG_TOUCH_MODE, FT8XX_TOUCH_MODE_CONTINUOUS);    //Touch enabled
     #endif
 
     #ifdef FT_81X_ENABLE
         wr8(REG_CTOUCH_MODE, FT8XX_TOUCH_MODE_CONTINUOUS);      // Touch enabled
         wr8(REG_CTOUCH_EXTENDED, 1);                            // Compatibility mode
     #endif
-    touchpanel_init();
+    touchpanel_calibrate();
 }
 
-//**********************void FT_touchpanel_init (void)************************//
+//**********************void touchpanel_calibrate (void)************************//
 //Description : Function initializes FT801 touch panel, calibration too
 //
 //Function prototype : void FT_touchpanel_init (void)
@@ -241,11 +241,11 @@ void FT8XX_EVE::init (void)
 //
 //Exit params        : None
 //
-//Function call      : FT_touchpanel_init();
+//Function call      : touchpanel_calibrate();
 //
 //Intellitrol  08/07/2016
 //******************************************************************************
-void FT8XX_EVE::touchpanel_init (void)
+void FT8XX_EVE::touchpanel_calibrate (void)
 {
     start_new_dl();                    //Start new dlist
     write_dl_long(CLEAR(1, 1, 1));

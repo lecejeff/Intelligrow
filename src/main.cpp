@@ -17,15 +17,15 @@
 #include "FT8XX.h"
 #include "image_file.h"
 
-#include <WiFiUdp.h>
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>        // Include the mDNS library
-#include <FS.h>
+#include <ESP8266WiFiMulti.h>
+#include <ArduinoOTA.h>
+
+ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 
 // Wifi and web server variables
-// const char* ssid     = "JFBBGF";        // Your WiFi ssid
-// const char* password = "IngMed9496";    // Your Wifi password;
+const char* ssid     = "JFBBGF";        // Your WiFi ssid
+const char* password = "IngMed9496";    // Your Wifi password;
 // const char* mdnsName = "intelligrow";        // Domain name for the mDNS responder
 
 // ESP8266WebServer server(80);
@@ -85,8 +85,43 @@ ICACHE_RAM_ATTR void water_level_handle()
 void setup() 
 {
     ESP_init();
-
     Serial.begin(460800);
+
+    // wifiMulti.addAP(ssid, password);   // add Wi-Fi networks you want to connect to
+    // Serial.println("Connecting ...");
+    // int i = 0;
+    // while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
+    //     delay(250);
+    //     Serial.print('.');
+    // }
+    // Serial.println('\n');
+    // Serial.print("Connected to ");
+    // Serial.println(WiFi.SSID());              // Tell us what network we're connected to
+    // Serial.print("IP address:\t");
+    // Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer    
+
+    // ArduinoOTA.setHostname("ESP8266");
+    // ArduinoOTA.setPassword("esp8266");
+
+    // ArduinoOTA.onStart([]() {
+    //     Serial.println("Start");
+    // });
+    // ArduinoOTA.onEnd([]() {
+    //     Serial.println("\nEnd");
+    // });
+    // ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    //     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    // });
+    // ArduinoOTA.onError([](ota_error_t error) {
+    //     Serial.printf("Error[%u]: ", error);
+    //     if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    //     else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    //     else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    //     else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    //     else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    // });
+    // ArduinoOTA.begin();
+    // Serial.println("OTA ready");
 
     Wire.pins(4, 5);
     Wire.begin();                                       // Initialize I2C bus on ESP8266
@@ -152,6 +187,7 @@ void setup()
 
 void loop()
 {
+    // ArduinoOTA.handle();
     // Flag set in the ft8xx_display_refresh() ticker service
     if (intelligrow.lcd_refresh_flag == 1)
     {
@@ -211,7 +247,7 @@ void loop()
                     if (intelligrow.calibration_flag == 0)
                     {
                         intelligrow.calibration_flag = 1;
-                        ft8xx.touchpanel_init();                    
+                        ft8xx.touchpanel_calibrate();                    
                         intelligrow.previous_menu = MAIN_MENU;                    
                         intelligrow.menu_to_display = GENERAL_SETTINGS_MENU;      
                     }          

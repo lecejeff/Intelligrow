@@ -252,7 +252,7 @@ void I2C_ADC::get_sample(unsigned char channel)
             ADC_struct.conv_result[0] = Wire.read();
             ADC_struct.conv_result[1] = Wire.read();
             ADC_struct.temperature_input = (((ADC_struct.conv_result[0] << 8) | ADC_struct.conv_result[1])>>4);
-            ADC_struct.temp_real = (long)(((ADC_struct.temperature_input * ADC_struct.adc_lsb_weight)  - ADC_struct.temp_offset) / ADC_struct.temp_coeff);
+            ADC_struct.temp_real = (long)(((double)(ADC_struct.temperature_input * ADC_struct.adc_lsb_weight)  - ADC_struct.temp_offset) / ADC_struct.temp_coeff);
         break;      
 
         case ADC_BATTERY_MONITOR_INPUT:

@@ -24,7 +24,7 @@ class FT8XX_EVE
       unsigned char read_touch_tag (void);
       unsigned char get_touch_tag (void);
       void clear_touch_tag (void);
-      void touchpanel_init (void);
+      void touchpanel_calibrate (void);
       STTouch touchpanel_read (STTouch touch_read);
       void start_new_dl (void);
       void update_screen_dl (void);  
