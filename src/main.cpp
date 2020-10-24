@@ -1,11 +1,11 @@
-//Test git
-// Test git #2 dans projet
-
 // Arduino framework includes
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Ticker.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <ArduinoOTA.h>
 
 // Intelligrow -oriented libraries
 #include "general.h"
@@ -17,26 +17,16 @@
 #include "FT8XX.h"
 #include "image_file.h"
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-#include <ArduinoOTA.h>
+
+
+// If the next line is uncommented, the screen is installed and is the base of the HMI
+//#define SCREEN_ENABLE
 
 ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 
 // Wifi and web server variables
 const char* ssid     = "JFBBGF";        // Your WiFi ssid
 const char* password = "IngMed9496";    // Your Wifi password;
-// const char* mdnsName = "intelligrow";        // Domain name for the mDNS responder
-
-// ESP8266WebServer server(80);
-// File fsUploadFile;                                    // a File variable to temporarily store the received file
-// WiFiUDP UDP;                   // Create an instance of the WiFiUDP class to send and receive UDP messages
-// IPAddress timeServerIP;        // The time.nist.gov NTP server's IP address
-// const char* ntpServerName = "time.nist.gov";
-// const int NTP_PACKET_SIZE = 48;          // NTP time stamp is in the first 48 bytes of the message
-// byte packetBuffer[NTP_PACKET_SIZE];     // A buffer to hold incoming and outgoing packets
-//
-
 
 MENU_MANAGER menu;
 I2C_ADC adc_i2c;
@@ -87,42 +77,6 @@ void setup()
     ESP_init();
     Serial.begin(460800);
 
-    // wifiMulti.addAP(ssid, password);   // add Wi-Fi networks you want to connect to
-    // Serial.println("Connecting ...");
-    // int i = 0;
-    // while (wifiMulti.run() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
-    //     delay(250);
-    //     Serial.print('.');
-    // }
-    // Serial.println('\n');
-    // Serial.print("Connected to ");
-    // Serial.println(WiFi.SSID());              // Tell us what network we're connected to
-    // Serial.print("IP address:\t");
-    // Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer    
-
-    // ArduinoOTA.setHostname("ESP8266");
-    // ArduinoOTA.setPassword("esp8266");
-
-    // ArduinoOTA.onStart([]() {
-    //     Serial.println("Start");
-    // });
-    // ArduinoOTA.onEnd([]() {
-    //     Serial.println("\nEnd");
-    // });
-    // ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-    //     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    // });
-    // ArduinoOTA.onError([](ota_error_t error) {
-    //     Serial.printf("Error[%u]: ", error);
-    //     if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    //     else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    //     else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    //     else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    //     else if (error == OTA_END_ERROR) Serial.println("End Failed");
-    // });
-    // ArduinoOTA.begin();
-    // Serial.println("OTA ready");
-
     Wire.pins(4, 5);
     Wire.begin();                                       // Initialize I2C bus on ESP8266
                                                         // Call Wire.piin() and Wire.begin() before FT8XX_init();
@@ -130,7 +84,9 @@ void setup()
     SPI.begin();                                        // Initialize SPI bus on ESP8266
     SPI.beginTransaction(SPISettings(15000000, MSBFIRST, SPI_MODE0));
 
-    ft8xx.init();                                       // Initialize LCD and touchpanel
+    #ifdef SCREEN_ENABLE
+        ft8xx.init();                                       // Initialize LCD and touchpanel
+    #endif
 
     rtc.init(RTC_INITIAL_POWERUP);                      // Initialize real-time clock
 
@@ -138,45 +94,54 @@ void setup()
 
     plant.init(PLANT_1);                                // Initialize default plants
 
-    // WiFi.begin(ssid, password);             // Connect to the network
-    // Serial.print("Attempting to connect to SSID: ");
-    // Serial.print(ssid);
-
-    // // Attempt to connect to WiFi network:
-    // while (WiFi.status() != WL_CONNECTED) 
-    // {
-    //     Serial.print(".");
-    //     // Connect to WPA/WPA2 network. Change this line if using open or WEP  network:
-    //     // Wait 5 seconds for connection:
-    //     delay(5000);
-    // }
-
-    // Serial.println("");
-    // Serial.println("WiFi connected");
-    // Serial.println("IP address: ");
-    // Serial.println(WiFi.localIP());   //You can get IP address assigned to ESP   
-
-    // if(WiFi.status() == WL_CONNECTED) //If WiFi connected to hot spot then start mDNS
-    // {
-    //     if (!MDNS.begin("intelligrow")) 
-    //     {             // Start the mDNS responder for esp8266.local
-    //         Serial.println("Error setting up MDNS responder!");
-    //     }
-    //     else
-    //     {
-    //         Serial.println("mDNS responder started"); 
-    //         server.on("/", handleRoot);  //Associate handler function to path
-                
-    //         server.begin();                           //Start server
-    //         Serial.println("HTTP server started");          
-    //     }
-    // }
-
     menu.init();
+
+    // Wifi related function calls should be placed here after all modules are initialized
+    // -----------------------------------------------------------------------------------
+    wifiMulti.addAP(ssid, password);   // add Wi-Fi networks you want to connect to
+    Serial.println("Connecting ...");
+    unsigned char wifi_led_state = 0;
+    while (wifiMulti.run() != WL_CONNECTED) 
+    { 
+        // Wait for the Wi-Fi to connect
+        delay(250);
+        Serial.print('.');
+        expander_i2c.write_bit(EXPANDER_nWIFI_ACT_BIT, wifi_led_state);
+        wifi_led_state = !wifi_led_state;
+    }
+    Serial.println('\n');
+    Serial.print("Connected to ");
+    Serial.println(WiFi.SSID());              // Tell us what network we're connected to
+    Serial.print("IP address:\t");
+    Serial.println(WiFi.localIP());           // Send the IP address of the ESP8266 to the computer  
+    expander_i2c.write_bit(EXPANDER_nWIFI_ACT_BIT, LED_ON); 
+    // ------------------------------------------------------------------------------------------- 
+
+    // On-The-Air update function calls should be placed here after WiFi initialization
+    // ------------------------------------------------------------------------------------------- 
+    ArduinoOTA.onStart([]() {
+        Serial.println("Start");
+    });
+    ArduinoOTA.onEnd([]() {
+        Serial.println("\nEnd");
+    });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    });
+    ArduinoOTA.onError([](ota_error_t error) {
+        Serial.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+    ArduinoOTA.begin();
+    Serial.println("OTA ready");
+    // ------------------------------------------------------------------------------------------- 
 
     // Initialize application tickers
     // // These sould be the last function calls before going in the while(1)
-    // Wifi_LED_refresh_ticker.attach(1, WiFi_LED_ticker);
     inactivity_ticker.attach(1, inactivity_counter_ticker);         // Inactivity counter service for automatic screensaver switch
     time_update_ticker.attach(0.25, rtc_refresh_ticker);            // Real-time clock update service
     sensor_update_ticker.attach(0.1, sensor_refresh_ticker);        // Sensors continuous refresh service
@@ -187,90 +152,98 @@ void setup()
 
 void loop()
 {
-    // ArduinoOTA.handle();
+    ArduinoOTA.handle();
     // Flag set in the ft8xx_display_refresh() ticker service
-    if (intelligrow.lcd_refresh_flag == 1)
-    {
-        // Update lcd_refresh flag and scan the actual TAG value.
-        intelligrow.lcd_refresh_flag = 0;
 
-        intelligrow.touch_tag_value = ft8xx.read_touch_tag();
-        intelligrow.touch_track = ft8xx.rd32(REG_TRACKER);
-
-        // Scan the touch tag value, and determine which object on the screen was touched
-        if (intelligrow.touch_tag_value != 0)
+    #ifdef SCREEN_ENABLE
+        if (intelligrow.lcd_refresh_flag == 1)
         {
-            clear_inactivity_counter(); 
-            switch (intelligrow.touch_tag_value)
-            {                   
-                // Touch tag 1 on screensaver gradient
-                // Touching the screensaver moves the UI to the main menu                
-                case 1: 
-                             
-                    intelligrow.menu_to_display = MAIN_MENU;
-                break;
+            // Update lcd_refresh flag and scan the actual TAG value.
+            intelligrow.lcd_refresh_flag = 0;
 
-                // Touch tag 2 on Plant growth button
-                // Touching the "Plant growth" button moves the UI
-                case 2:
-                    intelligrow.previous_menu = MAIN_MENU;                    
-                    intelligrow.menu_to_display = PLANT_GROWTH_MENU;
-                break;
+            intelligrow.touch_tag_value = ft8xx.read_touch_tag();
+            intelligrow.touch_track = ft8xx.rd32(REG_TRACKER);
 
-                // Touch tag 3 on Garden parameters button
-                // Touching the "Garden parameters" button moves the UI
-                case 3:
-                    intelligrow.previous_menu = MAIN_MENU;
-                    intelligrow.menu_to_display = GARDEN_PARAMETERS_MENU;
-                break;
+            // Scan the touch tag value, and determine which object on the screen was touched
+            if (intelligrow.touch_tag_value != 0)
+            {
+                clear_inactivity_counter(); 
+                switch (intelligrow.touch_tag_value)
+                {                   
+                    // Touch tag 1 on screensaver gradient
+                    // Touching the screensaver moves the UI to the main menu                
+                    case 1: 
+                                
+                        intelligrow.menu_to_display = MAIN_MENU;
+                    break;
 
-                // Touch tag 4 on General settings button
-                // Touching the "General settings" button moves the UI
-                case 4:
-                    intelligrow.previous_menu = MAIN_MENU;
-                    intelligrow.menu_to_display = GENERAL_SETTINGS_MENU;        
-                break;
-
-                // Touch tag 5 on Return button
-                // Applicable to any menu that requires a return function
-                case 5:
-                    intelligrow.menu_to_display = intelligrow.previous_menu;
-                break;
-
-                // Touch tag 6 on WiFi parameters button
-                //
-                case 6:
-                break;
-                
-                // Touch tag 7 runs a touchpanel calibration
-                case 7: 
-                    if (intelligrow.calibration_flag == 0)
-                    {
-                        intelligrow.calibration_flag = 1;
-                        ft8xx.touchpanel_calibrate();                    
+                    // Touch tag 2 on Plant growth button
+                    // Touching the "Plant growth" button moves the UI
+                    case 2:
                         intelligrow.previous_menu = MAIN_MENU;                    
-                        intelligrow.menu_to_display = GENERAL_SETTINGS_MENU;      
-                    }          
-                break;
+                        intelligrow.menu_to_display = PLANT_GROWTH_MENU;
+                    break;
 
+                    // Touch tag 3 on Garden parameters button
+                    // Touching the "Garden parameters" button moves the UI
+                    case 3:
+                        intelligrow.previous_menu = MAIN_MENU;
+                        intelligrow.menu_to_display = GARDEN_PARAMETERS_MENU;
+                    break;
+
+                    // Touch tag 4 on General settings button
+                    // Touching the "General settings" button moves the UI
+                    case 4:
+                        intelligrow.previous_menu = MAIN_MENU;
+                        intelligrow.menu_to_display = GENERAL_SETTINGS_MENU;        
+                    break;
+
+                    // Touch tag 5 on Return button
+                    // Applicable to any menu that requires a return function
+                    case 5:
+                        intelligrow.menu_to_display = intelligrow.previous_menu;
+                    break;
+
+                    // Touch tag 6 on WiFi parameters button
+                    //
+                    case 6:
+                    break;
+                    
+                    // Touch tag 7 runs a touchpanel calibration
+                    case 7: 
+                        if (intelligrow.calibration_flag == 0)
+                        {
+                            intelligrow.calibration_flag = 1;
+                            ft8xx.touchpanel_calibrate();                    
+                            intelligrow.previous_menu = MAIN_MENU;                    
+                            intelligrow.menu_to_display = GENERAL_SETTINGS_MENU;      
+                        }          
+                    break;
+
+                }
             }
-        }
-       
-        // Show screensaver
-        if (intelligrow.menu_screensaver == 1)
-        {
-            intelligrow.menu_to_display = SCREENSAVER_MENU;
-        }
+        
+            // Show screensaver
+            if (intelligrow.menu_screensaver == 1)
+            {
+                intelligrow.menu_to_display = SCREENSAVER_MENU;
+            }
 
-        menu.display(intelligrow.menu_to_display); 
-        ft8xx.clear_touch_tag(); 
-    }
+            menu.display(intelligrow.menu_to_display); 
+            ft8xx.clear_touch_tag(); 
+        }
+    #endif
 
     if (debug_uart_flag == 1)
     {
         debug_uart_flag = 0;
         Serial.write("Intelligrow Autonomous Garden - Debug"); 
-        Serial.write(0x0D); Serial.write(0x0A);      
+        Serial.write(0x0D); Serial.write(0x0A);    
+        Serial.write("Wifi ssid : ");
+        Serial.write(ssid);
+        Serial.write(0x0D); Serial.write(0x0A); 
+        Serial.write("IP address : ");
+        Serial.println(WiFi.localIP());  
         Serial.write("Time : ");
         Serial.write(((dec2bcd(rtc.rtc_struct.hour) & 0xF0)>>4)+0x30); 
         Serial.write((dec2bcd(rtc.rtc_struct.hour) & 0x0F)+0x30);
@@ -303,6 +276,12 @@ void loop()
         hex_to_ascii(((adc_i2c.ADC_struct.battery_monitor_input & 0xFF00)>>8), &ByteH, &ByteL);
         Serial.write(ByteH); Serial.write(ByteL); 
         hex_to_ascii(adc_i2c.ADC_struct.battery_monitor_input, &ByteH, &ByteL);
+        Serial.write(ByteH); Serial.write(ByteL); 
+        Serial.write(0x0D); Serial.write(0x0A); 
+        Serial.write("BAT (REAL) : ");
+        hex_to_ascii(((dec2bcd(adc_i2c.ADC_struct.bat_real) & 0xFF00)>>8), &ByteH, &ByteL);  
+        Serial.write(ByteH); Serial.write(ByteL);  
+        hex_to_ascii(dec2bcd(adc_i2c.ADC_struct.bat_real), &ByteH, &ByteL);
         Serial.write(ByteH); Serial.write(ByteL); 
         Serial.write(0x0D); Serial.write(0x0A);         
         Serial.write("Water level : ");
@@ -367,7 +346,6 @@ void ft8xx_display_refresh()
 // Periodically read the real-time clock and update the time registers
 void rtc_refresh_ticker()
 {
-    //static unsigned char counter = 0;
     rtc.get_time();     
     menu.graphic_handle();                                   
 }
@@ -377,7 +355,7 @@ void water_counter_ticker ()
     static unsigned int counter = 0;
     if ((rtc.rtc_struct.second == 0) && (rtc.rtc_struct.minute == plant.GARDEN_struct.water_time_m) && (rtc.rtc_struct.hour == plant.GARDEN_struct.water_time_h))
     {
-        if (adc_i2c.ADC_struct.moisture_input >= plant.PLANT_struct.soil_moisture_setp)
+        if (adc_i2c.ADC_struct.moisture_input <= plant.PLANT_struct.soil_moisture_setp)
         {
             if (intelligrow.plant_watering_flag == 0)
             {
@@ -388,7 +366,7 @@ void water_counter_ticker ()
 
     if (intelligrow.plant_watering_flag == 1)
     {
-        if (++counter <= ((plant.GARDEN_struct.pump_on_time*1000)/100))
+        if (++counter <= plant.GARDEN_struct.pump_on_time*10)
         {
             expander_i2c.write_bit(EXPANDER_nPUMP_CTRL_BIT, PUMP_ON);
         }
