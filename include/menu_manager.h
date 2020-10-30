@@ -3,23 +3,28 @@
 
 #include "general.h"
 
+#define SCREEN_ENABLE
+
 #define DATA_TYPE_NUMBER 0
 #define DATA_TYPE_LETTER 1
 
 #define CONTEXT_MENU_CHANGE 0
 #define CONTEXT_ENTER_DATA 1
 
-#define GRAPH_X_TICK 24
-#define GRAPH_Y_TICK 10
-#define GRAPH_X_MINOR 3
-#define GRAPH_ACC_VALUE (GRAPH_X_TICK*GRAPH_X_MINOR)
-
 // Menu hierarchy
+#ifdef SCREEN_ENABLE
+
 #define SCREENSAVER_MENU 0
     #define MAIN_MENU 1
         #define PLANT_GROWTH_MENU 2
         #define GARDEN_PARAMETERS_MENU 3
         #define GENERAL_SETTINGS_MENU 4
+            #define WIFI_PARAMETERS_MENU 41
+
+#define GRAPH_X_TICK 24
+#define GRAPH_Y_TICK 10
+#define GRAPH_X_MINOR 3
+#define GRAPH_ACC_VALUE (GRAPH_X_TICK*GRAPH_X_MINOR)
 
 typedef struct
 {
@@ -82,5 +87,7 @@ class MENU_MANAGER
         GRAPH_STRUCT GRAPH_struct;
     private:
 };
+
+#endif  // #ifdef SCREEN_ENABLE
 
 #endif

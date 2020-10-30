@@ -17,18 +17,16 @@
 #include "FT8XX.h"
 #include "image_file.h"
 
-
-
-// If the next line is uncommented, the screen is installed and is the base of the HMI
-//#define SCREEN_ENABLE
-
 ESP8266WiFiMulti wifiMulti;     // Create an instance of the ESP8266WiFiMulti class, called 'wifiMulti'
 
 // Wifi and web server variables
 const char* ssid     = "JFBBGF";        // Your WiFi ssid
 const char* password = "IngMed9496";    // Your Wifi password;
 
-MENU_MANAGER menu;
+#ifdef SCREEN_ENABLE
+    MENU_MANAGER menu;
+#endif
+
 I2C_ADC adc_i2c;
 IO_expander expander_i2c;
 RTC_class rtc;
@@ -68,25 +66,17 @@ ICACHE_RAM_ATTR void water_level_handle()
     }   
 }
 
-// void handleRoot() {
-//   server.send(200, "text/plain", "Intelligrow v1_00-0a Web server is up and running");
-// }
-
 void setup() 
 {
-    ESP_init();
-    Serial.begin(460800);
+    ESP_init();                                         // ESP initialization
+    Serial.begin(460800);                               // Set UART speed
 
-    Wire.pins(4, 5);
+    Wire.pins(4, 5);                                    // Set I2C pins relative to Intelligrow pinout
     Wire.begin();                                       // Initialize I2C bus on ESP8266
                                                         // Call Wire.piin() and Wire.begin() before FT8XX_init();
     expander_i2c.init();                                // Initialize IO expander
     SPI.begin();                                        // Initialize SPI bus on ESP8266
     SPI.beginTransaction(SPISettings(15000000, MSBFIRST, SPI_MODE0));
-
-    #ifdef SCREEN_ENABLE
-        ft8xx.init();                                       // Initialize LCD and touchpanel
-    #endif
 
     rtc.init(RTC_INITIAL_POWERUP);                      // Initialize real-time clock
 
@@ -94,8 +84,11 @@ void setup()
 
     plant.init(PLANT_1);                                // Initialize default plants
 
-    menu.init();
-
+    #ifdef SCREEN_ENABLE
+        ft8xx.init();                                       // Initialize LCD and touchpanel
+        menu.init();                                        // Initialize Intelligrow menus
+    #endif
+    
     // Wifi related function calls should be placed here after all modules are initialized
     // -----------------------------------------------------------------------------------
     wifiMulti.addAP(ssid, password);   // add Wi-Fi networks you want to connect to
@@ -141,33 +134,36 @@ void setup()
     // ------------------------------------------------------------------------------------------- 
 
     // Initialize application tickers
-    // // These sould be the last function calls before going in the while(1)
+    // These sould be the last function calls before going in the while(1)
     inactivity_ticker.attach(1, inactivity_counter_ticker);         // Inactivity counter service for automatic screensaver switch
     time_update_ticker.attach(0.25, rtc_refresh_ticker);            // Real-time clock update service
     sensor_update_ticker.attach(0.1, sensor_refresh_ticker);        // Sensors continuous refresh service
     ft8xx_update_ticker.attach_ms(16, ft8xx_display_refresh);       // FT8XX refresh service
-    second_ticker.attach(1, light_counter_ticker);                  // 
-    water_ticker.attach_ms(100, water_counter_ticker);              //   
+    second_ticker.attach(1, light_counter_ticker);                  // 1s ticker
+    water_ticker.attach_ms(100, water_counter_ticker);              // 
+    // ------------------------------------------------------------------------------------------- 
 }
 
 void loop()
 {
-    ArduinoOTA.handle();
-    // Flag set in the ft8xx_display_refresh() ticker service
+    ArduinoOTA.handle();                                            // Handle the over-the-air update
 
+    // If SCREEN_ENABLE is defined, activate the FT8XX user interface
     #ifdef SCREEN_ENABLE
-        if (intelligrow.lcd_refresh_flag == 1)
+        
+        // Update screen if the flag is set
+        if (intelligrow.lcd_refresh_flag == 1)                      // Flag set in the ticker service
         {
-            // Update lcd_refresh flag and scan the actual TAG value.
             intelligrow.lcd_refresh_flag = 0;
 
-            intelligrow.touch_tag_value = ft8xx.read_touch_tag();
-            intelligrow.touch_track = ft8xx.rd32(REG_TRACKER);
+            intelligrow.touch_tag_value = ft8xx.read_touch_tag();   // Read the FT8XX touch_tag register
+            intelligrow.touch_track = ft8xx.rd32(REG_TRACKER);      // Read the FT8XX tracker register
 
             // Scan the touch tag value, and determine which object on the screen was touched
             if (intelligrow.touch_tag_value != 0)
             {
-                clear_inactivity_counter(); 
+                clear_inactivity_counter();                         // Activity detected
+
                 switch (intelligrow.touch_tag_value)
                 {                   
                     // Touch tag 1 on screensaver gradient
@@ -207,6 +203,8 @@ void loop()
                     // Touch tag 6 on WiFi parameters button
                     //
                     case 6:
+                        intelligrow.previous_menu = GENERAL_SETTINGS_MENU; 
+                        intelligrow.menu_to_display = WIFI_PARAMETERS_MENU;
                     break;
                     
                     // Touch tag 7 runs a touchpanel calibration
@@ -319,11 +317,15 @@ void loop()
 // Initialize ESP8266 peripherals and intelligrow variables
 void ESP_init(void)
 {
+    #ifdef SCREEN_ENABLE
+        intelligrow.menu_to_display = SCREENSAVER_MENU;
+    #endif
+
     intelligrow.water_empty_led_status = WATER_EMPTY_LED_DEFAULT_STATUS;
     intelligrow.wifi_act_led_status = WIFI_ACT_LED_DEFAULT_STATUS;
     intelligrow.touch_tag_value = 0;
     intelligrow.lcd_refresh_flag = 0;
-    intelligrow.menu_to_display = SCREENSAVER_MENU;
+    
     intelligrow.scan_tag_flag = 0;
     intelligrow.calibration_flag = 0;
     intelligrow.water_level_flag = 0;
@@ -346,8 +348,10 @@ void ft8xx_display_refresh()
 // Periodically read the real-time clock and update the time registers
 void rtc_refresh_ticker()
 {
-    rtc.get_time();     
-    menu.graphic_handle();                                   
+    rtc.get_time(); 
+    #ifdef SCREEN_ENABLE    
+        menu.graphic_handle();   
+    #endif                                
 }
 
 void water_counter_ticker ()
