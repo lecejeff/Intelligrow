@@ -20,13 +20,10 @@
 void ft8xx_display_refresh();
 
 void rtc_refresh_ticker ();
-void WiFi_LED_ticker ();
 void inactivity_counter_ticker();
-void menu_dynamic_tick();
 void sensor_refresh_ticker();
 void water_counter_ticker();
 void light_counter_ticker();
-void minute_counter_tick();
 void clear_inactivity_counter (void);
 
 #define TANK_ECHO_PIN 15

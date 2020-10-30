@@ -44,7 +44,7 @@ Ticker time_update_ticker;
 Ticker inactivity_ticker;
 // Ticker menu_refresh_ticker;
 Ticker sensor_update_ticker;
-Ticker second_ticker;
+Ticker light_second_ticker;
 Ticker water_ticker;
 
 // Interrupts function should come before the setup() and loop()
@@ -139,7 +139,7 @@ void setup()
     time_update_ticker.attach(0.25, rtc_refresh_ticker);            // Real-time clock update service
     sensor_update_ticker.attach(0.1, sensor_refresh_ticker);        // Sensors continuous refresh service
     ft8xx_update_ticker.attach_ms(16, ft8xx_display_refresh);       // FT8XX refresh service
-    second_ticker.attach(1, light_counter_ticker);                  // 1s ticker
+    light_second_ticker.attach(1, light_counter_ticker);                  // 1s ticker
     water_ticker.attach_ms(100, water_counter_ticker);              // 
     // ------------------------------------------------------------------------------------------- 
 }
@@ -197,7 +197,17 @@ void loop()
                     // Touch tag 5 on Return button
                     // Applicable to any menu that requires a return function
                     case 5:
-                        intelligrow.menu_to_display = intelligrow.previous_menu;
+                        // 2nd level menu hierarchy
+                        if (intelligrow.menu_to_display == WIFI_PARAMETERS_MENU)
+                        {
+                            intelligrow.previous_menu = MAIN_MENU;
+                            intelligrow.menu_to_display = GENERAL_SETTINGS_MENU;
+                        }
+                        else
+                        {
+                            intelligrow.menu_to_display = intelligrow.previous_menu;
+                        }                       
+                        
                     break;
 
                     // Touch tag 6 on WiFi parameters button

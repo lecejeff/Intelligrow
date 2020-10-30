@@ -3,6 +3,10 @@
 #include "rtc.h"
 #include "FT8XX.h"
 #include "ADC.h"
+
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+
 #include <Arduino.h>
 
 #ifdef SCREEN_ENABLE
@@ -18,6 +22,7 @@ extern I2C_ADC adc_i2c;
 extern INTELLIGROW_struct intelligrow;
 MENU_STRUCT menu_struct;
 RTC_STRUCT new_time;
+extern ESP8266WiFiMulti wifiMulti;
 
 void MENU_MANAGER::init(void)
 {    
@@ -159,6 +164,24 @@ void MENU_MANAGER::init(void)
 
     ft8xx.CMD_text(30, 455, 160, 22, OPT_CENTER, "Lux"); 
     ft8xx.CMD_text(31, 450, 200, 22, OPT_CENTER, "RH"); 
+
+    // WIFI_PARAMETERS_MENU
+    ft8xx.CMD_button(18, 7, 50, 147, 48, 22, OPT_FLAT, "Scan Wi-Fi");
+    ft8xx.set_touch_tag(FT_PRIM_BUTTON, 18, 32); 
+    ft8xx.CMD_text(32, 210, 60, 22, OPT_CENTER, "Wi-Fi name");
+    ft8xx.CMD_text(33, 400, 60, 22, OPT_CENTER, "Wi-Fi strength");
+    ft8xx.CMD_text(34, 170, 80, 22, 0, "Wi-Fi name #1");
+    ft8xx.CMD_number(17, 385, 80, 22, 0, 420);
+    ft8xx.CMD_text(35, 170, 110, 22, 0, "Wi-Fi name #2");
+    ft8xx.CMD_number(18, 385, 110, 22, 0, 420);
+    ft8xx.CMD_text(36, 170, 140, 22, 0, "Wi-Fi name #3");
+    ft8xx.CMD_number(19, 385, 140, 22, 0, 420);
+    ft8xx.CMD_text(37, 170, 170, 22, 0, "Wi-Fi name #4");
+    ft8xx.CMD_number(20, 385, 170, 22, 0, 420);
+    ft8xx.CMD_text(38, 170, 200, 22, 0, "Wi-Fi name #5");
+    ft8xx.CMD_number(21, 385, 200, 22, 0, 420);
+    ft8xx.CMD_text(39, 170, 230, 22, 0, "Wi-Fi name #6");
+    ft8xx.CMD_number(22, 385, 230, 22, 0, 420);
 
     // Initialize menu counters based on FT800 primitives
     menu_struct.day_counter = 2;   
@@ -809,13 +832,78 @@ void MENU_MANAGER::display (unsigned char menu)
             ft8xx.write_dl_long(TAG(st_Button[5].touch_tag));  
             ft8xx.draw_button(&st_Button[5]);
 
-            ft8xx.update_screen_dl();         		// Update display list    yield();   
+            ft8xx.update_screen_dl();         		// Update display list    yield();                  
+        break;  
 
-
+            // Second level menu hierarchy
             case WIFI_PARAMETERS_MENU:
+
+            //Touch tag on the "Scan Wi-FI button"
+            if (touch_tag == st_Button[18].touch_tag)
+            {
+                Serial.print("Scan start ... ");
+                int n = WiFi.scanNetworks();
+                Serial.print(n);
+                Serial.println(" network(s) found");
+                for (int i = 0; i < 6; i++)
+                {
+                    String test;
+                    char str[18];
+                    Serial.print(WiFi.SSID(i));    
+                    test = WiFi.SSID(i);
+                    test.toCharArray(str, 18, 0);
+                    ft8xx.modify_element_string(34 + i, FT_PRIM_TEXT, str);
+                    Serial.print(" ");
+                    Serial.println(WiFi.RSSI(i));
+                    ft8xx.modify_number(&st_Number[17 + i], NUMBER_VAL, abs(WiFi.RSSI(i)));   
+                }
                 
-            break;                  
-        break;        
+                Serial.println();               
+            }  
+
+            ft8xx.start_new_dl();					// Start a new display list, reset ring buffer and ring pointer
+
+            ft8xx.write_dl_long(CLEAR(1, 1, 1));
+            ft8xx.write_dl_long(TAG_MASK(1)); 
+            ft8xx.draw_gradient(&st_Gradient[0]);
+            ft8xx.write_dl_long(COLOR_RGB(255, 255, 255)); 
+            ft8xx.draw_text(&st_Text[0]);   
+            ft8xx.set_context_fcolor(0x005500);
+            ft8xx.set_context_bcolor(0x000000); 
+
+            ft8xx.write_dl_long(COLOR_RGB(0, 0, 0));
+            ft8xx.write_dl_long(BEGIN(RECTS));
+            ft8xx.write_dl_long(VERTEX2II(163, 50, 0, 0));
+            ft8xx.write_dl_long(VERTEX2II(470, 263, 0, 0));
+            ft8xx.write_dl_long(END());
+            ft8xx.write_dl_long(COLOR_RGB(255, 255, 255));
+
+            ft8xx.draw_text(&st_Text[32]);                      // Wi-Fi name
+            ft8xx.draw_text(&st_Text[33]);                      // WI-Fi strength
+
+            ft8xx.draw_text(&st_Text[34]);                      // Wi-Fi name #1
+            ft8xx.draw_number(&st_Number[17]);
+            ft8xx.draw_text(&st_Text[35]);                      // Wi-Fi name #2
+            ft8xx.draw_number(&st_Number[18]);
+            ft8xx.draw_text(&st_Text[36]);                      // Wi-Fi name #3
+            ft8xx.draw_number(&st_Number[19]);
+            ft8xx.draw_text(&st_Text[37]);                      // Wi-Fi name #4
+            ft8xx.draw_number(&st_Number[20]);
+            ft8xx.draw_text(&st_Text[38]);                      // Wi-Fi name #5
+            ft8xx.draw_number(&st_Number[21]);
+            ft8xx.draw_text(&st_Text[39]);                      // Wi-Fi name #6   
+            ft8xx.draw_number(&st_Number[22]);
+
+            // Scan Wi-Fi button
+            ft8xx.write_dl_long(TAG(st_Button[18].touch_tag));
+            ft8xx.draw_button(&st_Button[18]);
+
+            // Return button
+            ft8xx.write_dl_long(TAG(st_Button[3].touch_tag));  
+            ft8xx.draw_button(&st_Button[3]);
+
+            ft8xx.update_screen_dl();         		// Update display list    yield();   
+        break;         
     }
 }
 

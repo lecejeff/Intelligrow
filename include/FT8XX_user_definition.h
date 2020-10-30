@@ -33,9 +33,9 @@
 #define MAX_GRADIENT_NB 1
 #define MAX_WINDOW_NB 0
 #define MAX_SLIDER_NB 0
-#define MAX_BUTTON_NB 18
-#define MAX_TEXT_NB 32
-#define MAX_NUMBER_NB 17
+#define MAX_BUTTON_NB 19
+#define MAX_TEXT_NB 40
+#define MAX_NUMBER_NB 23
 #define MAX_TOGGLE_NB 5
 #define MAX_DIAL_NB 0
 #define MAX_PROGRESS_NB 0
