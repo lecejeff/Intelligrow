@@ -5,6 +5,7 @@
 #include "ADC.h"
 #include <Arduino.h>
 
+#ifdef SCREEN_ENABLE
 
 extern char *day_str_lut[7];
 extern char *month_str_lut[12];
@@ -262,13 +263,13 @@ void MENU_MANAGER::display (unsigned char menu)
             // Touch tag on the "+" button of water level       
             if (touch_tag == st_Button[8].touch_tag)
             {        
-                if (st_Toggle[3].state == TOGGLE_OFF)   // Water min level
+                if (st_Toggle[3].state == TOGGLE_OFF)   // Water empty level
                 {
                     plant.GARDEN_struct.water_empty_level++;
                     ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_empty_level);   
                     ft8xx.modify_gauge(&st_Gauge[0], GAUGE_RANGE, plant.GARDEN_struct.water_empty_level);  
                 }        
-                else
+                else                                    // Water full level
                 {
                     plant.GARDEN_struct.water_full_level++;
                     ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_full_level);       
@@ -278,13 +279,13 @@ void MENU_MANAGER::display (unsigned char menu)
             // Touch tag on the "-" button of water level
             if (touch_tag == st_Button[9].touch_tag)
             {
-                if (st_Toggle[3].state == TOGGLE_OFF)   // Water min level
+                if (st_Toggle[3].state == TOGGLE_OFF)   // Water empty level
                 {
                     if (--plant.GARDEN_struct.water_empty_level < 1){plant.GARDEN_struct.water_empty_level = 1;}
                     ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_empty_level);   
                     ft8xx.modify_gauge(&st_Gauge[0], GAUGE_RANGE, plant.GARDEN_struct.water_empty_level); 
                 }        
-                else
+                else                                    // Water full level
                 {
                     if (--plant.GARDEN_struct.water_full_level < 1){plant.GARDEN_struct.water_full_level = 1;}
                     ft8xx.modify_number(&st_Number[7], NUMBER_VAL, plant.GARDEN_struct.water_full_level);                       
@@ -360,7 +361,7 @@ void MENU_MANAGER::display (unsigned char menu)
             }             
 
 
-            // Touch tag on the Light + setpoint button
+            // Touch tag on the moisture + setpoint button
             if (touch_tag == st_Button[14].touch_tag)
             {   
                 plant.PLANT_struct.soil_moisture_setp += 25;
@@ -372,7 +373,7 @@ void MENU_MANAGER::display (unsigned char menu)
                 ft8xx.modify_number(&st_Number[10], NUMBER_VAL, plant.PLANT_struct.soil_moisture_setp);
             }   
 
-            // Touch tag on the Light - setpoint button
+            // Touch tag on the moisture - setpoint button
             if (touch_tag == st_Button[15].touch_tag)
             {   
                 if (plant.PLANT_struct.soil_moisture_setp >= 25)
@@ -808,7 +809,12 @@ void MENU_MANAGER::display (unsigned char menu)
             ft8xx.write_dl_long(TAG(st_Button[5].touch_tag));  
             ft8xx.draw_button(&st_Button[5]);
 
-            ft8xx.update_screen_dl();         		// Update display list    yield();                     
+            ft8xx.update_screen_dl();         		// Update display list    yield();   
+
+
+            case WIFI_PARAMETERS_MENU:
+                
+            break;                  
         break;        
     }
 }
@@ -876,3 +882,4 @@ void MENU_MANAGER::graphic_handle(void)
         } 
     }      
 }
+#endif
